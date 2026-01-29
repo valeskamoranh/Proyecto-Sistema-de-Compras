@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Orden de Compra</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      td {
+        vertical-align: top;
+      }
+      td .error-msg {
+        font-size: 0.75em;
+        margin-top: 2px;
+      }
+      .input-calculado {
+        background-color: #f0f0f0;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Regresar al Menú
+    </a>
+    <form class="container" onsubmit="return validarOrdenCompra();" novalidate>
+      <h1>Registrar Orden de Compra</h1>
+
+      <div class="form-group">
+        <label for="id_cotizacion">No. Cotización</label>
+        <input type="number" id="id_cotizacion" name="id_cotizacion" required />
+        <div id="error_cotizacion" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="fecha_emision">Fecha de Emisión</label>
+        <input type="date" id="fecha_emision" name="fecha_emision" required />
+        <div id="error_fecha" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="estado_OC">Estado</label>
+        <select id="estado_OC" name="estado_OC" required>
+          <option value="">Seleccione</option>
+          <option value="Emitida">Emitida</option>
+          <option value="En proceso">En proceso</option>
+          <option value="Entregada">Entregada</option>
+          <option value="Anulada">Anulada</option>
+        </select>
+        <div id="error_estado" class="error-msg"></div>
+      </div>
+
+      <h2>Detalle de Productos</h2>
+      <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
+
+      <table id="tabla-detalle">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="id_producto[]" class="input-texto" required>
+                <option value="">Seleccione producto</option>
+                <option value="1">Laptop HP</option>
+                <option value="2">Mouse Inalámbrico</option>
+                <option value="3">Teclado Mecánico</option>
+              </select>
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <input
+                type="number"
+                name="cantidad[]"
+                class="input-numero"
+                min="1"
+                oninput="calcularTotales()"
+                required
+              />
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <input
+                type="number"
+                step="0.01"
+                name="precio_unitario[]"
+                class="input-numero"
+                min="0.01"
+                oninput="calcularTotales()"
+                placeholder="0.00"
+                required
+              />
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <button type="button" onclick="eliminarFila(this)">🗑</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="btn-secondary" onclick="agregarFila()">
+        ➕ Agregar producto
+      </button>
+      <br /><br />
+
+      <div class="form-group">
+        <label for="cantidad_items">Cantidad de Ítems </label>
+        <input
+          type="number"
+          id="cantidad_items"
+          name="cantidad_items"
+          class="input-calculado"
+          readonly
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="monto_total_oc">Monto Total ($)</label>
+        <input
+          type="number"
+          step="0.01"
+          id="monto_total_oc"
+          name="monto_total_oc"
+          class="input-calculado"
+          readonly
+        />
+        <div id="error_monto_total" class="error-msg"></div>
+      </div>
+
+      <button type="submit" class="btn-guardar">
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          style="vertical-align: middle; margin-right: 5px"
+        >
+          <path
+            fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+          />
+        </svg>
+        Guardar Orden de Compra
+      </button>
+    </form>
+
+    <script src="../js/validaciones.js"></script>
+
+    <script>
+      // --- FUNCIONES DE CÁLCULO Y TABLA ---
+
+      function calcularTotales() {
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        let sumaTotal = 0;
+        let conteoItems = 0;
+
+        filas.forEach((fila) => {
+          const cant = parseFloat(
+            fila.querySelector("[name='cantidad[]']").value,
+          );
+          const prec = parseFloat(
+            fila.querySelector("[name='precio_unitario[]']").value,
+          );
+
+          // Si la fila tiene valores válidos, sumamos
+          if (!isNaN(cant) && !isNaN(prec)) {
+            sumaTotal += cant * prec;
+          }
+          conteoItems++; // Cuenta cada fila como un ítem
+        });
+
+        document.getElementById("monto_total_oc").value = sumaTotal.toFixed(2);
+        document.getElementById("cantidad_items").value = conteoItems;
+      }
+
+      function agregarFila() {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        const nuevaFila = tbody.rows[0].cloneNode(true);
+
+        nuevaFila
+          .querySelectorAll("input, select")
+          .forEach((input) => (input.value = ""));
+        nuevaFila
+          .querySelectorAll(".error-msg")
+          .forEach((div) => (div.style.display = "none"));
+        nuevaFila
+          .querySelectorAll(".input-error")
+          .forEach((input) => input.classList.remove("input-error"));
+
+        tbody.appendChild(nuevaFila);
+        calcularTotales(); // Actualizar contador de ítems
+      }
+
+      function eliminarFila(boton) {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        if (tbody.rows.length > 1) {
+          boton.closest("tr").remove();
+          calcularTotales(); // Recalcular total y cantidad de ítems
+        } else {
+          alert("La orden debe tener al menos un producto.");
+        }
+      }
+
+      // --- VALIDACIONES ---
+
+      function mostrarErrorFila(input, mensaje) {
+        input.classList.add("input-error");
+        const divError = input.parentElement.querySelector(".error-msg");
+        if (divError) {
+          divError.innerText = mensaje;
+          divError.style.display = "block";
+        }
+      }
+
+      function validarOrdenCompra() {
+        limpiarErrores();
+        let esValido = true;
+
+        // 1. VALIDAR CABECERA
+        const idCotizacion = document
+          .getElementById("id_cotizacion")
+          .value.trim();
+        const fecha = document.getElementById("fecha_emision").value;
+        const estado = document.getElementById("estado_OC").value;
+
+        if (esVacio(idCotizacion)) {
+          mostrarError(
+            "id_cotizacion",
+            "error_cotizacion",
+            "El número de cotización es obligatorio.",
+          );
+          esValido = false;
+        } else if (!esSoloNumeros(idCotizacion)) {
+          mostrarError(
+            "id_cotizacion",
+            "error_cotizacion",
+            "El ID debe ser numérico.",
+          );
+          esValido = false;
+        }
+
+        if (esVacio(fecha)) {
+          mostrarError(
+            "fecha_emision",
+            "error_fecha",
+            "La fecha de emisión es obligatoria.",
+          );
+          esValido = false;
+        }
+
+        if (esVacio(estado)) {
+          mostrarError(
+            "estado_OC",
+            "error_estado",
+            "Debe seleccionar un estado.",
+          );
+          esValido = false;
+        }
+
+        // 2. VALIDAR TABLA DETALLES
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        const errorTabla = document.getElementById("error_tabla");
+
+        if (filas.length === 0) {
+          errorTabla.innerText = "Debe agregar productos a la orden.";
+          errorTabla.style.display = "block";
+          esValido = false;
+        } else {
+          filas.forEach((fila) => {
+            const inputProd = fila.querySelector("[name='id_producto[]']");
+            const inputCant = fila.querySelector("[name='cantidad[]']");
+            const inputPrec = fila.querySelector("[name='precio_unitario[]']");
+
+            // Producto
+            if (esVacio(inputProd.value)) {
+              mostrarErrorFila(inputProd, "Seleccione producto");
+              esValido = false;
+            }
+
+            // Cantidad
+            if (esVacio(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Requerido");
+              esValido = false;
+            } else if (!esNumeroPositivo(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Mayor a 0");
+              esValido = false;
+            }
+
+            // Precio Unitario
+            if (esVacio(inputPrec.value)) {
+              mostrarErrorFila(inputPrec, "Requerido");
+              esValido = false;
+            } else if (!esNumeroPositivo(inputPrec.value)) {
+              mostrarErrorFila(inputPrec, "Mayor a 0");
+              esValido = false;
+            }
+          });
+        }
+
+        // Validar que el total sea mayor a 0 (por seguridad)
+        const montoTotal = parseFloat(
+          document.getElementById("monto_total_oc").value,
+        );
+        if (isNaN(montoTotal) || montoTotal <= 0) {
+          mostrarError(
+            "monto_total_oc",
+            "error_monto_total",
+            "El monto total no puede ser 0. Agregue productos y precios.",
+          );
+          esValido = false;
+        }
+
+        return esValido;
+      }
+
+      // Calcular al cargar por si hay datos precargados
+      window.onload = calcularTotales;
+    </script>
+  </body>
+</html>

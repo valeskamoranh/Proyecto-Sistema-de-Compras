@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Requisición</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      td {
+        vertical-align: top;
+      }
+      td .error-msg {
+        font-size: 0.75em;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Regresar al Menú
+    </a>
+    <form class="container" onsubmit="return validarRequisicion();" novalidate>
+      <h1>Registrar Requisición</h1>
+
+      <div class="form-group">
+        <label for="id_usuario">Usuario solicitante </label>
+        <input
+          type="text"
+          id="id_usuario"
+          name="id_usuario"
+          maxlength="10"
+          placeholder="Ingrese cédula"
+          required
+        />
+        <div id="error_usuario" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="fecha">Fecha de requisición</label>
+        <input type="date" id="fecha" name="fecha" required />
+        <div id="error_fecha" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="estado">Estado</label>
+        <select id="estado" name="estado" required>
+          <option value="">Seleccione</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Aprobada">Aprobada</option>
+          <option value="Rechazada">Rechazada</option>
+          <option value="En proceso">En proceso</option>
+        </select>
+        <div id="error_estado" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="justificacion">Justificación</label>
+        <textarea id="justificacion" name="justificacion"></textarea>
+        <div id="error_justificacion" class="error-msg"></div>
+      </div>
+
+      <h2>Detalle de Requisición</h2>
+
+      <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
+
+      <table id="tabla-detalle">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Unidad Medida</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="id_producto[]" class="input-texto" required>
+                <option value="">Seleccione producto</option>
+                <option value="1">Computadora</option>
+                <option value="2">Silla</option>
+                <option value="3">Papel Higienico</option>
+              </select>
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <input
+                type="number"
+                name="cantidad[]"
+                min="1"
+                class="input-numero"
+                required
+              />
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <select name="unidad_medida[]" class="input-texto" required>
+                <option value="">Seleccione</option>
+                <option value="Caja">Caja</option>
+                <option value="Paquete">Paquete</option>
+                <option value="Unidad">Unidad</option>
+                <option value="Litro">Litro</option>
+              </select>
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <button type="button" onclick="eliminarFila(this)">🗑</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="btn-secondary" onclick="agregarFila()">
+        ➕ Agregar producto
+      </button>
+      <br /><br />
+
+      <button type="submit" class="btn-guardar">
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          style="vertical-align: middle; margin-right: 5px"
+        >
+          <path
+            fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+          />
+        </svg>
+        Guardar Requisición
+      </button>
+    </form>
+
+    <script src="../js/validaciones.js"></script>
+
+    <script>
+      // --- FUNCIONES DE TABLA ---
+      function agregarFila() {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        const nuevaFila = tbody.rows[0].cloneNode(true);
+
+        nuevaFila
+          .querySelectorAll("input, select")
+          .forEach((input) => (input.value = ""));
+        nuevaFila
+          .querySelectorAll(".error-msg")
+          .forEach((div) => (div.style.display = "none"));
+        nuevaFila
+          .querySelectorAll(".input-error")
+          .forEach((input) => input.classList.remove("input-error"));
+
+        tbody.appendChild(nuevaFila);
+      }
+
+      function eliminarFila(boton) {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        if (tbody.rows.length > 1) {
+          boton.closest("tr").remove();
+        } else {
+          alert("Debe mantener al menos un producto.");
+        }
+      }
+
+      // --- VALIDACIÓN ---
+
+      function mostrarErrorFila(elementoInput, mensaje) {
+        elementoInput.classList.add("input-error");
+        const padre = elementoInput.parentElement;
+        const divError = padre.querySelector(".error-msg");
+        if (divError) {
+          divError.innerText = mensaje;
+          divError.style.display = "block";
+        }
+      }
+
+      function validarRequisicion() {
+        limpiarErrores();
+        let esValido = true;
+
+        // 1. VALIDAR CABECERA
+        const idUsuario = document.getElementById("id_usuario").value.trim();
+        const fecha = document.getElementById("fecha").value;
+        const estado = document.getElementById("estado").value;
+        const justificacion = document
+          .getElementById("justificacion")
+          .value.trim();
+
+        // Usuario
+        if (esVacio(idUsuario)) {
+          mostrarError(
+            "id_usuario",
+            "error_usuario",
+            "El usuario solicitante es obligatorio.",
+          );
+          esValido = false;
+        } else if (!esLongitudExacta(idUsuario, 10)) {
+          mostrarError(
+            "id_usuario",
+            "error_usuario",
+            "La cédula debe tener exactamente 10 dígitos.",
+          );
+          esValido = false;
+        }
+
+        // Fecha
+        if (esVacio(fecha)) {
+          mostrarError(
+            "fecha",
+            "error_fecha",
+            "La fecha de requisición es obligatoria.",
+          );
+          esValido = false;
+        }
+
+        // Estado
+        if (esVacio(estado)) {
+          mostrarError(
+            "estado",
+            "error_estado",
+            "Debe seleccionar un estado para la requisición.",
+          );
+          esValido = false;
+        }
+
+        // Justificación
+        if (esVacio(justificacion)) {
+          mostrarError(
+            "justificacion",
+            "error_justificacion",
+            "La justificación es obligatoria.",
+          );
+          esValido = false;
+        }
+
+        // 2. VALIDAR TABLA
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        const errorTabla = document.getElementById("error_tabla");
+
+        if (filas.length === 0) {
+          errorTabla.innerText =
+            "Debe agregar al menos un producto a la lista.";
+          errorTabla.style.display = "block";
+          esValido = false;
+        } else {
+          filas.forEach((fila) => {
+            const inputProd = fila.querySelector("[name='id_producto[]']");
+            const inputCant = fila.querySelector("[name='cantidad[]']");
+            const inputUnidad = fila.querySelector("[name='unidad_medida[]']");
+
+            if (esVacio(inputProd.value)) {
+              mostrarErrorFila(inputProd, "Seleccione producto");
+              esValido = false;
+            }
+
+            if (esVacio(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Requerido");
+              esValido = false;
+            } else if (!esNumeroPositivo(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Mayor a 0");
+              esValido = false;
+            }
+
+            if (esVacio(inputUnidad.value)) {
+              mostrarErrorFila(inputUnidad, "Requerido");
+              esValido = false;
+            }
+          });
+        }
+
+        return esValido;
+      }
+    </script>
+  </body>
+</html>

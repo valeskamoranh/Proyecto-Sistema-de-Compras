@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Usuario</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Regresar al Menú
+    </a>
+    <form class="container" onsubmit="return validarUsuario();">
+      <h1>Registrar Usuario</h1>
+
+      <div class="form-group">
+        <label for="id_usuario">Cédula / ID Usuario</label>
+        <input
+          type="text"
+          id="id_usuario"
+          name="id_usuario"
+          maxlength="10"
+          placeholder="Ingrese cédula"
+        />
+        <div id="error_cedula" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="nombre">Nombre completo</label>
+        <input type="text" id="nombre" name="nombre" />
+        <div id="error_nombre" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="cargo">Cargo</label>
+        <select id="cargo" name="cargo">
+          <option value="">Seleccione</option>
+          <option value="Empleado">Empleado</option>
+          <option value="Jefe de Área">Jefe de Área</option>
+          <option value="Compras">Compras</option>
+          <option value="Administrador">Administrador</option>
+        </select>
+        <div id="error_cargo" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo Electrónico</label>
+        <input type="email" id="email" name="email" />
+        <div id="error_email" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_area">ID Área</label>
+        <input type="number" id="id_area" name="id_area" />
+        <div id="error_area" class="error-msg"></div>
+      </div>
+
+      <button type="submit" class="btn-guardar">
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          style="vertical-align: middle; margin-right: 5px"
+        >
+          <path
+            fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+          />
+        </svg>
+        Guardar Usuario
+      </button>
+    </form>
+
+    <script src="../js/validaciones.js"></script>
+
+    <script>
+      function validarUsuario() {
+        limpiarErrores();
+        let esValido = true;
+
+        const cedula = document.getElementById("id_usuario").value.trim();
+        const nombre = document.getElementById("nombre").value.trim();
+        const cargo = document.getElementById("cargo").value;
+        const email = document.getElementById("email").value.trim();
+        const idArea = document.getElementById("id_area").value.trim();
+
+        // --- VALIDAR CÉDULA ---
+        if (esVacio(cedula)) {
+          mostrarError(
+            "id_usuario",
+            "error_cedula",
+            "La cédula es obligatoria.",
+          );
+          esValido = false;
+        } else if (!esSoloNumeros(cedula)) {
+          mostrarError(
+            "id_usuario",
+            "error_cedula",
+            "La cédula solo debe contener números.",
+          );
+          esValido = false;
+        } else if (!esLongitudExacta(cedula, 10)) {
+          mostrarError(
+            "id_usuario",
+            "error_cedula",
+            "La cédula debe tener exactamente 10 dígitos.",
+          );
+          esValido = false;
+        }
+
+        // --- VALIDAR NOMBRE ---
+        if (esVacio(nombre)) {
+          mostrarError("nombre", "error_nombre", "El nombre es obligatorio.");
+          esValido = false;
+        } else if (!esSoloTexto(nombre)) {
+          mostrarError(
+            "nombre",
+            "error_nombre",
+            "El nombre solo puede contener letras.",
+          );
+          esValido = false;
+        } else if (!cumpleLongitudMinima(nombre, 3)) {
+          mostrarError("nombre", "error_nombre", "El nombre es muy corto.");
+          esValido = false;
+        }
+
+        // --- VALIDAR CARGO ---
+        if (esVacio(cargo)) {
+          mostrarError("cargo", "error_cargo", "Debe seleccionar un cargo.");
+          esValido = false;
+        }
+
+        // --- VALIDAR EMAIL ---
+        if (esVacio(email)) {
+          mostrarError("email", "error_email", "El correo es obligatorio.");
+          esValido = false;
+        } else if (!esEmailValido(email)) {
+          mostrarError(
+            "email",
+            "error_email",
+            "Ingrese un formato válido (ej: usuario@dominio.com).",
+          );
+          esValido = false;
+        }
+
+        // --- VALIDAR AREA ---
+        if (esVacio(idArea)) {
+          mostrarError(
+            "id_area",
+            "error_area",
+            "El ID del área es obligatorio.",
+          );
+          esValido = false;
+        } else if (!esSoloNumeros(idArea)) {
+          mostrarError(
+            "id_area",
+            "error_area",
+            "El ID del área debe ser numérico.",
+          );
+          esValido = false;
+        }
+
+        return esValido;
+      }
+    </script>
+  </body>
+</html>

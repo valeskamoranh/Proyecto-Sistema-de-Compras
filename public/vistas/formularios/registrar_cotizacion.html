@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Cotización</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      td {
+        vertical-align: top;
+      }
+      td .error-msg {
+        font-size: 0.75em;
+        margin-top: 2px;
+      }
+      #monto_total {
+        font-weight: bold;
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Regresar al Menú
+    </a>
+    <form class="container" onsubmit="return validarCotizacion();" novalidate>
+      <h1>Registrar Cotización</h1>
+
+      <div class="form-group">
+        <label for="id_requisicion">Requisición </label>
+        <input type="text" id="id_requisicion" name="id_requisicion" required />
+        <div id="error_requisicion" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_proveedor">Proveedor</label>
+        <select id="id_proveedor" name="id_proveedor" required>
+          <option value="">Seleccione un proveedor</option>
+          <option value="1">Proveedor A - Suministros S.A.</option>
+        </select>
+        <div id="error_proveedor" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="fecha_cotizacion">Fecha de Cotización</label>
+        <input
+          type="date"
+          id="fecha_cotizacion"
+          name="fecha_cotizacion"
+          required
+        />
+        <div id="error_fecha" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="validez">Validez de la oferta (Días)</label>
+        <input type="number" id="validez" name="validez" min="1" required />
+        <div id="error_validez" class="error-msg"></div>
+      </div>
+
+      <h2>Detalle de Productos</h2>
+      <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
+
+      <table id="tabla-detalle">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="id_producto[]" class="input-texto" required>
+                <option value="">Seleccione producto</option>
+                <option value="1">Computadora</option>
+                <option value="2">Silla</option>
+                <option value="3">Papel Higienico</option>
+              </select>
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <input
+                type="number"
+                name="cantidad[]"
+                class="input-numero"
+                min="1"
+                oninput="calcularTotal()"
+                required
+              />
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <input
+                type="number"
+                name="precio_unitario[]"
+                class="input-numero"
+                step="0.01"
+                min="0.01"
+                oninput="calcularTotal()"
+                placeholder="0.00"
+                required
+              />
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <button type="button" onclick="eliminarFila(this)">🗑</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="btn-secondary" onclick="agregarFila()">
+        ➕ Agregar producto
+      </button>
+
+      <br /><br />
+
+      <div class="form-group">
+        <label for="monto_total">Monto Total ($)</label>
+        <input
+          type="text"
+          id="monto_total"
+          name="monto_total"
+          value="0.00"
+          readonly
+        />
+        <div id="error_monto_total" class="error-msg"></div>
+      </div>
+
+      <button type="submit" class="btn-guardar">
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          style="vertical-align: middle; margin-right: 5px"
+        >
+          <path
+            fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+          />
+        </svg>
+        Guardar Cotización
+      </button>
+    </form>
+
+    <script src="../js/validaciones.js"></script>
+
+    <script>
+      // --- FUNCIONES EXTRA ---
+
+      function calcularTotal() {
+        let total = 0;
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+
+        filas.forEach((fila) => {
+          const cant = fila.querySelector("[name='cantidad[]']").value;
+          const precio = fila.querySelector("[name='precio_unitario[]']").value;
+
+          // Solo sumamos si ambos son números válidos
+          if (cant && precio && !isNaN(cant) && !isNaN(precio)) {
+            total += parseFloat(cant) * parseFloat(precio);
+          }
+        });
+
+        // Muestra 2 decimales
+        document.getElementById("monto_total").value = total.toFixed(2);
+      }
+
+      function agregarFila() {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        const nuevaFila = tbody.rows[0].cloneNode(true);
+
+        // Limpiar valores y errores
+        nuevaFila
+          .querySelectorAll("input, select")
+          .forEach((input) => (input.value = ""));
+        nuevaFila
+          .querySelectorAll(".error-msg")
+          .forEach((div) => (div.style.display = "none"));
+        nuevaFila
+          .querySelectorAll(".input-error")
+          .forEach((input) => input.classList.remove("input-error"));
+
+        tbody.appendChild(nuevaFila);
+      }
+
+      function eliminarFila(boton) {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        if (tbody.rows.length > 1) {
+          boton.closest("tr").remove();
+          calcularTotal(); // Recalcular al borrar
+        } else {
+          alert("La cotización debe tener al menos un producto.");
+        }
+      }
+
+      // --- VALIDACIÓN ---
+
+      function mostrarErrorFila(input, mensaje) {
+        input.classList.add("input-error");
+        const divError = input.parentElement.querySelector(".error-msg");
+        if (divError) {
+          divError.innerText = mensaje;
+          divError.style.display = "block";
+        }
+      }
+
+      function validarCotizacion() {
+        limpiarErrores();
+        let esValido = true;
+
+        // 1. VALIDAR CABECERA
+        const idRequisicion = document
+          .getElementById("id_requisicion")
+          .value.trim();
+        const idProveedor = document.getElementById("id_proveedor").value;
+        const fecha = document.getElementById("fecha_cotizacion").value;
+        const validez = document.getElementById("validez").value;
+
+        // Requisición
+        if (esVacio(idRequisicion)) {
+          mostrarError(
+            "id_requisicion",
+            "error_requisicion",
+            "El número de requisición es obligatorio.",
+          );
+          esValido = false;
+        } else if (!esSoloNumeros(idRequisicion)) {
+          mostrarError(
+            "id_requisicion",
+            "error_requisicion",
+            "El ID debe ser numérico.",
+          );
+          esValido = false;
+        }
+
+        // Proveedor
+        if (esVacio(idProveedor)) {
+          mostrarError(
+            "id_proveedor",
+            "error_proveedor",
+            "Debe seleccionar un proveedor.",
+          );
+          esValido = false;
+        }
+
+        // Fecha
+        if (esVacio(fecha)) {
+          mostrarError(
+            "fecha_cotizacion",
+            "error_fecha",
+            "La fecha de la cotización es obligatoria.",
+          );
+          esValido = false;
+        }
+
+        // Validez
+        if (esVacio(validez)) {
+          mostrarError(
+            "validez",
+            "error_validez",
+            "Los días de validez son obligatorios.",
+          );
+          esValido = false;
+        } else if (!esNumeroPositivo(validez)) {
+          mostrarError(
+            "validez",
+            "error_validez",
+            "Debe ser un número de días válido.",
+          );
+          esValido = false;
+        }
+
+        // 2. VALIDAR DETALLES
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        const errorTabla = document.getElementById("error_tabla");
+
+        if (filas.length === 0) {
+          errorTabla.innerText = "Agregue productos a la cotización.";
+          errorTabla.style.display = "block";
+          esValido = false;
+        } else {
+          filas.forEach((fila) => {
+            const inputProd = fila.querySelector("[name='id_producto[]']");
+            const inputCant = fila.querySelector("[name='cantidad[]']");
+            const inputPrecio = fila.querySelector(
+              "[name='precio_unitario[]']",
+            );
+
+            // Producto
+            if (esVacio(inputProd.value)) {
+              mostrarErrorFila(inputProd, "Seleccione producto");
+              esValido = false;
+            }
+
+            // Cantidad
+            if (esVacio(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Requerido");
+              esValido = false;
+            } else if (!esNumeroPositivo(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Mayor a 0");
+              esValido = false;
+            }
+
+            // Precio Unitario
+            if (esVacio(inputPrecio.value)) {
+              mostrarErrorFila(inputPrecio, "Requerido");
+              esValido = false;
+            } else if (!esNumeroPositivo(inputPrecio.value)) {
+              mostrarErrorFila(inputPrecio, "Mayor a 0.00");
+              esValido = false;
+            }
+          });
+        }
+
+        const montoTotal = parseFloat(
+          document.getElementById("monto_total").value,
+        );
+
+        if (isNaN(montoTotal) || montoTotal <= 0) {
+          mostrarError(
+            "monto_total",
+            "error_monto_total",
+            "El monto total no puede ser 0.",
+          );
+          esValido = false;
+        }
+
+        return esValido;
+      }
+    </script>
+  </body>
+</html>

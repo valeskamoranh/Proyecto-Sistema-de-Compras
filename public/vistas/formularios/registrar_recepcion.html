@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Recepción</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      td {
+        vertical-align: top;
+      }
+      td .error-msg {
+        font-size: 0.75em;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Regresar al Menú
+    </a>
+    <form class="container" onsubmit="return validarRecepcion();" novalidate>
+      <h1>Registrar Recepción</h1>
+
+      <div class="form-group">
+        <label for="id_oc">Orden de compra </label>
+        <input type="number" id="id_oc" name="id_oc" required />
+        <div id="error_oc" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="fecha_recepcion">Fecha de recepción</label>
+        <input
+          type="date"
+          id="fecha_recepcion"
+          name="fecha_recepcion"
+          required
+        />
+        <div id="error_fecha" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" name="observaciones"></textarea>
+        <div id="error_observaciones" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="estado_recepcion">Estado</label>
+        <select id="estado_recepcion" name="estado_recepcion" required>
+          <option value="">Seleccione</option>
+          <option value="Completa">Completa</option>
+          <option value="Parcial">Parcial</option>
+          <option value="Rechazada">Rechazada</option>
+        </select>
+        <div id="error_estado" class="error-msg"></div>
+      </div>
+
+      <h2>Detalle de Recepción</h2>
+      <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
+
+      <table id="tabla-detalle">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad recibida</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="id_producto[]" class="input-texto" required>
+                <option value="">Seleccione producto</option>
+                <option value="1">Laptop HP</option>
+                <option value="2">Mouse</option>
+              </select>
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <input
+                type="number"
+                name="cantidad_recibida[]"
+                min="0"
+                class="input-numero"
+                required
+              />
+              <div class="error-msg"></div>
+            </td>
+            <td>
+              <button type="button" onclick="eliminarFila(this)">🗑</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="btn-secondary" onclick="agregarFila()">
+        ➕ Agregar producto
+      </button>
+      <br /><br />
+
+      <button type="submit" class="btn-guardar">
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          style="vertical-align: middle; margin-right: 5px"
+        >
+          <path
+            fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+          />
+        </svg>
+        Guardar Recepción
+      </button>
+    </form>
+
+    <script src="../js/validaciones.js"></script>
+
+    <script>
+      // --- FUNCIONES DE TABLA ---
+      function agregarFila() {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        const nuevaFila = tbody.rows[0].cloneNode(true);
+
+        nuevaFila
+          .querySelectorAll("input, select")
+          .forEach((input) => (input.value = ""));
+        nuevaFila
+          .querySelectorAll(".error-msg")
+          .forEach((div) => (div.style.display = "none"));
+        nuevaFila
+          .querySelectorAll(".input-error")
+          .forEach((input) => input.classList.remove("input-error"));
+
+        tbody.appendChild(nuevaFila);
+      }
+
+      function eliminarFila(boton) {
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        if (tbody.rows.length > 1) {
+          boton.closest("tr").remove();
+        } else {
+          alert("Debe registrar al menos un producto recibido.");
+        }
+      }
+
+      // --- VALIDACIONES ---
+
+      function mostrarErrorFila(input, mensaje) {
+        input.classList.add("input-error");
+        const divError = input.parentElement.querySelector(".error-msg");
+        if (divError) {
+          divError.innerText = mensaje;
+          divError.style.display = "block";
+        }
+      }
+
+      function validarRecepcion() {
+        limpiarErrores();
+        let esValido = true;
+
+        // 1. VALIDAR CABECERA
+        const idOc = document.getElementById("id_oc").value.trim();
+        const fecha = document.getElementById("fecha_recepcion").value;
+        const estado = document.getElementById("estado_recepcion").value;
+        if (esVacio(idOc)) {
+          mostrarError(
+            "id_oc",
+            "error_oc",
+            "El número de Orden de Compra es obligatorio.",
+          );
+          esValido = false;
+        } else if (!esSoloNumeros(idOc)) {
+          mostrarError("id_oc", "error_oc", "Debe ser un valor numérico.");
+          esValido = false;
+        }
+
+        if (esVacio(fecha)) {
+          mostrarError(
+            "fecha_recepcion",
+            "error_fecha",
+            "La fecha de recepción es obligatoria.",
+          );
+          esValido = false;
+        }
+
+        if (esVacio(estado)) {
+          mostrarError(
+            "estado_recepcion",
+            "error_estado",
+            "Debe seleccionar el estado de la recepción.",
+          );
+          esValido = false;
+        }
+
+        // 2. VALIDAR TABLA (Mensajes cortos)
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        const errorTabla = document.getElementById("error_tabla");
+
+        if (filas.length === 0) {
+          errorTabla.innerText = "Debe agregar productos recibidos.";
+          errorTabla.style.display = "block";
+          esValido = false;
+        } else {
+          filas.forEach((fila) => {
+            const inputProd = fila.querySelector("[name='id_producto[]']");
+            const inputCant = fila.querySelector(
+              "[name='cantidad_recibida[]']",
+            );
+
+            // Validar Producto
+            if (esVacio(inputProd.value)) {
+              mostrarErrorFila(inputProd, "Seleccione producto");
+              esValido = false;
+            }
+
+            // Validar Cantidad Recibida
+            if (esVacio(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Requerido");
+              esValido = false;
+            } else if (!esNumeroPositivo(inputCant.value)) {
+              mostrarErrorFila(inputCant, "Mayor a 0");
+              esValido = false;
+            }
+          });
+        }
+
+        return esValido;
+      }
+    </script>
+  </body>
+</html>

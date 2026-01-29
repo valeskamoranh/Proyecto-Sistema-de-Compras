@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Producto</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Regresar al Menú
+    </a>
+    <form class="container" onsubmit="return validarProducto();" novalidate>
+      <h1>Registrar Producto</h1>
+
+      <div class="form-group">
+        <label for="nombre_producto">Nombre</label>
+        <input type="text" id="nombre_producto" name="nombre_producto" />
+        <div id="error_nombre" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion"></textarea>
+        <div id="error_descripcion" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="unidad_medida">Unidad Medida</label>
+        <select id="unidad_medida" name="unidad_medida">
+          <option value="">Seleccione</option>
+          <option value="Caja">Caja</option>
+          <option value="Paquete">Paquete</option>
+          <option value="Unidad">Unidad</option>
+          <option value="Litro">Litro</option>
+        </select>
+        <div id="error_unidad" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="cantidad_unidad">Cantidad por unidad</label>
+        <input
+          type="number"
+          id="cantidad_unidad"
+          name="cantidad_unidad"
+          min="1"
+        />
+        <div id="error_cantidad" class="error-msg"></div>
+      </div>
+
+      <button type="submit" class="btn-guardar">
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          style="vertical-align: middle; margin-right: 5px"
+        >
+          <path
+            fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+          />
+        </svg>
+        Guardar Producto
+      </button>
+    </form>
+
+    <script src="../js/validaciones.js"></script>
+
+    <script>
+      function validarProducto() {
+        limpiarErrores();
+        let esValido = true;
+
+        const nombre = document.getElementById("nombre_producto").value.trim();
+        const unidad = document.getElementById("unidad_medida").value;
+        const cantidad = document.getElementById("cantidad_unidad").value;
+
+        // (Opcional) Descripción
+        const descripcion = document.getElementById("descripcion").value.trim();
+
+        // --- VALIDAR NOMBRE ---
+        if (esVacio(nombre)) {
+          mostrarError(
+            "nombre_producto",
+            "error_nombre",
+            "El nombre del producto es obligatorio.",
+          );
+          esValido = false;
+        } else if (nombre.length < 3) {
+          mostrarError(
+            "nombre_producto",
+            "error_nombre",
+            "El nombre es muy corto.",
+          );
+          esValido = false;
+        }
+
+        // --- VALIDAR UNIDAD DE MEDIDA ---
+        if (esVacio(unidad)) {
+          mostrarError(
+            "unidad_medida",
+            "error_unidad",
+            "Seleccione una unidad de medida.",
+          );
+          esValido = false;
+        }
+
+        // --- VALIDAR CANTIDAD POR UNIDAD ---
+        if (esVacio(cantidad)) {
+          mostrarError(
+            "cantidad_unidad",
+            "error_cantidad",
+            "La cantidad es obligatoria.",
+          );
+          esValido = false;
+        } else if (!esNumeroPositivo(cantidad)) {
+          mostrarError(
+            "cantidad_unidad",
+            "error_cantidad",
+            "La cantidad debe ser mayor a 0.",
+          );
+          esValido = false;
+        }
+
+        return esValido;
+      }
+    </script>
+  </body>
+</html>

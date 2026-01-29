@@ -1,0 +1,450 @@
+/* 1. IMPORTAR FUENTE MODERNA (Google Fonts) */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap");
+
+/* 2. ESTILOS GENERALES */
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  min-height: 100vh;
+  color: #333;
+}
+
+/* 3. BARRA DE NAVEGACIÓN */
+.navbar {
+  background: #ffffff;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.navbar h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #4c1d95;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.navbar a {
+  color: #555;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.navbar a:hover {
+  color: #7c3aed;
+}
+
+/* 4. CONTENEDOR TIPO TARJETA (CARD) */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.05),
+    0 5px 10px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* 5. FORMULARIOS E INPUTS */
+h1,
+h2,
+h3 {
+  color: #4c1d95;
+  margin-top: 0;
+}
+
+h2 {
+  border-bottom: 2px solid #ddd6fe;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* Inputs */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+  background-color: #f9f9ff;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  background-color: #fff;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+/* 6. BOTONES */
+.btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-block;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  text-align: center;
+}
+
+/* Botón Primario */
+.btn-primary {
+  background-image: linear-gradient(to right, #7c3aed 0%, #5b21b6 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
+}
+
+/* Botón Success (mismo esquema para coherencia) */
+.btn-success {
+  background-image: linear-gradient(to right, #7c3aed 0%, #5b21b6 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+}
+
+/* Botón Secundario y Peligro */
+.btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+/* 7. TABLAS */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 20px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #ddd6fe;
+}
+
+th {
+  background-color: #ede9fe;
+  color: #4c1d95;
+  font-weight: 600;
+  padding: 15px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #ddd6fe;
+}
+
+td {
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+tr:hover {
+  background-color: #ede9fe;
+}
+
+/* 8. UTILIDADES Y GRID */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.text-right {
+  text-align: right;
+}
+.mt-3 {
+  margin-top: 20px;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .container {
+    padding: 20px;
+    margin: 20px;
+  }
+}
+
+/* 9. BOTÓN GUARDAR */
+.btn-guardar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: white;
+  padding: 12px 35px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-guardar:hover {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
+}
+
+.btn-guardar:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+}
+
+.btn-guardar svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* 10. INDEX / DASHBOARD */
+.header {
+  background: linear-gradient(135deg, #4c1d95, #7c3aed);
+  color: white;
+  padding: 30px;
+  text-align: center;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 25px;
+  padding: 40px;
+}
+
+.module {
+  background-color: white;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.module:hover {
+  transform: translateY(-5px);
+}
+
+.module h2 {
+  margin-top: 0;
+  color: #4c1d95;
+}
+
+.module p {
+  color: #4b5563;
+}
+
+.module a {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 18px;
+  background-color: #7c3aed;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.module a:hover {
+  background-color: #5b21b6;
+}
+
+.titulo-principal {
+  color: #ffffff;
+  font-family: "Montserrat", sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* Inputs numéricos pequeños */
+.input-numero {
+  width: 100px;
+}
+
+/* Campos de texto o selects normales */
+.input-texto {
+  width: 100%;
+}
+
+/* Centrar columnas completas */
+table th,
+table td {
+  text-align: center;
+}
+
+/* CONTENEDOR ESPECÍFICO PARA TABLAS */
+.table-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+table {
+  background-color: #ffffff;
+}
+
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 35px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;
+  font-size: 16px;
+}
+
+/* --- ESTILOS PARA VALIDACIONES --- */
+
+/* Contenedor del campo para dar espacio al mensaje */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El mensaje de texto rojo debajo del input */
+.error-msg {
+  color: #dc3545; 
+  font-size: 0.85em;
+  margin-top: 5px;
+  font-weight: bold;
+  display: none; 
+}
+
+/* El estilo del input cuando tiene error (Borde rojo) */
+input.input-error {
+  border: 2px solid #dc3545 !important;
+  background-color: #fff8f8;
+}
+
+/* Para que el botón no se pegue al último input */
+.btn-guardar {
+  margin-top: 10px;
+}
+
+/* --- BOTÓN REGRESAR (FLOTANTE) --- */
+.btn-regresar {
+    position: absolute; 
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+    text-decoration: none;
+    color: #555; 
+    font-family: sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+/* Efecto al pasar el mouse */
+.btn-regresar:hover {
+    background-color: #f0f0f0;
+    color: #000;
+    transform: translateX(-3px); 
+}
+
+/* Ajuste para móviles: que no se pegue tanto al borde */
+@media (max-width: 600px) {
+    .btn-regresar {
+        top: 10px;
+        left: 10px;
+        font-size: 0; 
+    }
+    .btn-regresar svg {
+        width: 24px;
+        height: 24px;
+    }
+}

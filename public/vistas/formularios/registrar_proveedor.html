@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Proveedor</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Regresar al Menú
+    </a>
+    <form class="container" onsubmit="return validarProveedor();" novalidate>
+      <h1>Registrar Proveedor</h1>
+
+      <div class="form-group">
+        <label for="nombre">Nombre comercial o Razón social</label>
+        <input type="text" id="nombre" name="nombre" required />
+        <div id="error_nombre" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="ruc">RUC</label>
+        <input type="text" id="ruc" name="ruc" maxlength="13" required />
+        <div id="error_ruc" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo</label>
+        <input type="email" id="email" name="email" />
+        <div id="error_email" class="error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono" maxlength="15" />
+        <div id="error_telefono" class="error-msg"></div>
+      </div>
+
+      <button type="submit" class="btn-guardar">
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          style="vertical-align: middle; margin-right: 5px"
+        >
+          <path
+            fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+          />
+        </svg>
+        Guardar Proveedor
+      </button>
+    </form>
+
+    <script src="../js/validaciones.js"></script>
+
+    <script>
+      function validarProveedor() {
+        limpiarErrores();
+        let esValido = true;
+
+        const nombreVal = document.getElementById("nombre").value.trim();
+        const rucVal = document.getElementById("ruc").value.trim();
+        const emailVal = document.getElementById("email").value.trim();
+        const telefonoVal = document.getElementById("telefono").value.trim();
+
+        // --- VALIDAR NOMBRE ---
+        if (esVacio(nombreVal)) {
+          mostrarError(
+            "nombre",
+            "error_nombre",
+            "La razón social es obligatoria.",
+          );
+          esValido = false;
+        } else if (nombreVal.length < 3) {
+          mostrarError("nombre", "error_nombre", "El nombre es muy corto.");
+          esValido = false;
+        }
+
+        // --- VALIDAR RUC ---
+        if (esVacio(rucVal)) {
+          mostrarError("ruc", "error_ruc", "El RUC es obligatorio.");
+          esValido = false;
+        } else if (!esSoloNumeros(rucVal)) {
+          mostrarError("ruc", "error_ruc", "Solo se permiten números.");
+          esValido = false;
+        } else if (!esLongitudRango(rucVal, 10, 13)) {
+          mostrarError(
+            "ruc",
+            "error_ruc",
+            "El RUC debe tener entre 10 y 13 dígitos.",
+          );
+          esValido = false;
+        }
+
+        // --- VALIDAR EMAIL ---
+        if (!esVacio(emailVal) && !esEmailValido(emailVal)) {
+          mostrarError("email", "error_email", "Formato de correo inválido.");
+          esValido = false;
+        }
+
+        // --- VALIDAR TELEFONO (Opcional) ---
+        if (!esVacio(telefonoVal)) {
+          if (!esSoloNumeros(telefonoVal)) {
+            mostrarError(
+              "telefono",
+              "error_telefono",
+              "Solo se permiten números.",
+            );
+            esValido = false;
+          } else if (!cumpleLongitudMinima(telefonoVal, 7)) {
+            mostrarError(
+              "telefono",
+              "error_telefono",
+              "Número inválido (mínimo 7 dígitos).",
+            );
+            esValido = false;
+          }
+        }
+
+        return esValido;
+      }
+    </script>
+  </body>
+</html>
