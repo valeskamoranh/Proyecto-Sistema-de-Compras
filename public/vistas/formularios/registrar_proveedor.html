@@ -19,7 +19,7 @@
       >
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Regresar al Menú
+      Regresar al Menú Principal
     </a>
     <form class="container" onsubmit="return validarProveedor();" novalidate>
       <h1>Registrar Proveedor</h1>
@@ -93,15 +93,9 @@
         if (esVacio(rucVal)) {
           mostrarError("ruc", "error_ruc", "El RUC es obligatorio.");
           esValido = false;
-        } else if (!esSoloNumeros(rucVal)) {
-          mostrarError("ruc", "error_ruc", "Solo se permiten números.");
-          esValido = false;
-        } else if (!esLongitudRango(rucVal, 10, 13)) {
-          mostrarError(
-            "ruc",
-            "error_ruc",
-            "El RUC debe tener entre 10 y 13 dígitos.",
-          );
+
+        } else if (!esRucEcuatoriano(rucVal)) {
+          mostrarError("ruc", "error_ruc", "El RUC ingresado no es válido.");
           esValido = false;
         }
 

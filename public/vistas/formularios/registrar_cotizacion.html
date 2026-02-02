@@ -32,7 +32,7 @@
       >
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Regresar al Menú
+      Regresar al Menú Principal
     </a>
     <form class="container" onsubmit="return validarCotizacion();" novalidate>
       <h1>Registrar Cotización</h1>
@@ -176,7 +176,6 @@
           }
         });
 
-        // Muestra 2 decimales
         document.getElementById("monto_total").value = total.toFixed(2);
       }
 
@@ -202,7 +201,7 @@
         const tbody = document.querySelector("#tabla-detalle tbody");
         if (tbody.rows.length > 1) {
           boton.closest("tr").remove();
-          calcularTotal(); // Recalcular al borrar
+          calcularTotal(); 
         } else {
           alert("La cotización debe tener al menos un producto.");
         }
@@ -258,12 +257,20 @@
           esValido = false;
         }
 
-        // Fecha
+        // --- VALIDAR FECHA DE COTIZACIÓN ---
         if (esVacio(fecha)) {
           mostrarError(
             "fecha_cotizacion",
             "error_fecha",
-            "La fecha de la cotización es obligatoria.",
+            "La fecha es obligatoria.",
+          );
+          esValido = false;
+
+        } else if (!esFechaNoFutura(fecha)) {
+          mostrarError(
+            "fecha_cotizacion",
+            "error_fecha",
+            "La fecha del documento no puede ser futura.",
           );
           esValido = false;
         }

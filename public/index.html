@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -18,7 +18,9 @@
         color: #666;
         user-select: none;
       }
-      .toggle-password:hover { color: #333; }
+      .toggle-password:hover {
+        color: #333;
+      }
     </style>
   </head>
   <body>
@@ -26,20 +28,32 @@
       <h2>Iniciar Sesión</h2>
 
       <form onsubmit="return validarLogin();" novalidate>
-        
         <div class="form-group">
-            <label for="txt_usuario">Usuario </label>
-            <input type="text" id="txt_usuario" name="usuario" maxlength="10" placeholder="Ingrese su cédula" required />
-            <div id="error_usuario" class="error-msg"></div>
+          <label for="txt_usuario">Usuario </label>
+          <input
+            type="text"
+            id="txt_usuario"
+            name="usuario"
+            maxlength="10"
+            placeholder="Ingrese su cédula"
+            required
+          />
+          <div id="error_usuario" class="error-msg"></div>
         </div>
 
         <div class="form-group">
-            <label for="txt_password">Contraseña</label>
-            <div class="password-container">
-                <input type="password" id="txt_password" name="password" placeholder="Ingrese su contraseña" required />
-                <span class="toggle-password" onclick="verPassword()">Mostrar</span>
-            </div>
-            <div id="error_password" class="error-msg"></div>
+          <label for="txt_password">Contraseña</label>
+          <div class="password-container">
+            <input
+              type="password"
+              id="txt_password"
+              name="password"
+              placeholder="Ingrese su contraseña"
+              required
+            />
+            <span class="toggle-password" onclick="verPassword()">Mostrar</span>
+          </div>
+          <div id="error_password" class="error-msg"></div>
         </div>
 
         <button class="btn-guardar" type="submit">Ingresar</button>
@@ -50,50 +64,65 @@
 
     <script>
       function validarLogin() {
-        limpiarErrores(); 
+        limpiarErrores();
         let esValido = true;
 
         const usuario = document.getElementById("txt_usuario").value.trim();
         const password = document.getElementById("txt_password").value.trim();
 
-        // 1. VALIDAR USUARIO 
+        // 1. VALIDAR USUARIO (Cédula)
         if (esVacio(usuario)) {
-          mostrarError("txt_usuario", "error_usuario", "El usuario es obligatorio.");
+          mostrarError(
+            "txt_usuario",
+            "error_usuario",
+            "El usuario es obligatorio.",
+          );
           esValido = false;
-        } else if (!esSoloNumeros(usuario)) {
-          mostrarError("txt_usuario", "error_usuario", "El usuario debe ser numérico (Cédula).");
-          esValido = false;
-        } else if (!esLongitudExacta(usuario, 10)) {
-          mostrarError("txt_usuario", "error_usuario", "El usuario debe tener 10 dígitos.");
+
+        } else if (!esCedulaEcuatoriana(usuario)) {
+          mostrarError(
+            "txt_usuario",
+            "error_usuario",
+            "Ingrese una cédula válida.",
+          );
           esValido = false;
         }
 
         // 2. VALIDAR CONTRASEÑA
         if (esVacio(password)) {
-          mostrarError("txt_password", "error_password", "La contraseña es obligatoria.");
+          mostrarError(
+            "txt_password",
+            "error_password",
+            "La contraseña es obligatoria.",
+          );
           esValido = false;
+          
         } else if (!cumpleLongitudMinima(password, 6)) {
-          mostrarError("txt_password", "error_password", "Contraseña incorrecta (mínimo 6 caracteres).");
+          mostrarError(
+            "txt_password",
+            "error_password",
+            "Contraseña incorrecta (mínimo 6 caracteres).",
+          );
           esValido = false;
         }
 
         if (esValido) {
-            window.location.href = "./vistas/formularios/menu_principal.html"; 
+          window.location.href = "./vistas/formularios/menu_principal.html";
         }
 
-        return false; 
+        return false;
       }
 
       function verPassword() {
         const input = document.getElementById("txt_password");
         const texto = document.querySelector(".toggle-password");
-        
+
         if (input.type === "password") {
-            input.type = "text";
-            texto.textContent = "Ocultar";
+          input.type = "text";
+          texto.textContent = "Ocultar";
         } else {
-            input.type = "password";
-            texto.textContent = "Mostrar";
+          input.type = "password";
+          texto.textContent = "Mostrar";
         }
       }
     </script>

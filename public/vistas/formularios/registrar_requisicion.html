@@ -28,7 +28,7 @@
       >
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Regresar al Menú
+      Regresar al Menú Principal
     </a>
     <form class="container" onsubmit="return validarRequisicion();" novalidate>
       <h1>Registrar Requisición</h1>
@@ -204,22 +204,22 @@
             "El usuario solicitante es obligatorio.",
           );
           esValido = false;
-        } else if (!esLongitudExacta(idUsuario, 10)) {
+          
+        } else if (!esCedulaEcuatoriana(idUsuario)) {
           mostrarError(
             "id_usuario",
             "error_usuario",
-            "La cédula debe tener exactamente 10 dígitos.",
+            "Ingrese una cédula de usuario válida.",
           );
           esValido = false;
         }
 
-        // Fecha
+        // --- VALIDAR FECHA DE REQUISICIÓN ---
         if (esVacio(fecha)) {
-          mostrarError(
-            "fecha",
-            "error_fecha",
-            "La fecha de requisición es obligatoria.",
-          );
+          mostrarError("fecha", "error_fecha", "La fecha es obligatoria.");
+          esValido = false;
+        } else if (!esFechaNoFutura(fecha)) {
+          mostrarError("fecha", "error_fecha", "La fecha no puede ser futura.");
           esValido = false;
         }
 

@@ -28,7 +28,7 @@
       >
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Regresar al Menú
+      Regresar al Menú Principal
     </a>
     <form class="container" onsubmit="return validarRecepcion();" novalidate>
       <h1>Registrar Recepción</h1>
@@ -187,11 +187,20 @@
           esValido = false;
         }
 
+        // --- VALIDAR FECHA DE RECEPCIÓN ---
         if (esVacio(fecha)) {
           mostrarError(
             "fecha_recepcion",
             "error_fecha",
             "La fecha de recepción es obligatoria.",
+          );
+          esValido = false;
+
+        } else if (!esFechaNoFutura(fecha)) {
+          mostrarError(
+            "fecha_recepcion",
+            "error_fecha",
+            "No puedes registrar recepciones futuras.",
           );
           esValido = false;
         }
@@ -205,7 +214,7 @@
           esValido = false;
         }
 
-        // 2. VALIDAR TABLA (Mensajes cortos)
+        // 2. VALIDAR TABLA 
         const filas = document.querySelectorAll("#tabla-detalle tbody tr");
         const errorTabla = document.getElementById("error_tabla");
 

@@ -19,7 +19,7 @@
       >
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Regresar al Menú
+      Regresar al Menú Principal
     </a>
     <form class="container" onsubmit="return validarUsuario();">
       <h1>Registrar Usuario</h1>
@@ -103,18 +103,11 @@
             "La cédula es obligatoria.",
           );
           esValido = false;
-        } else if (!esSoloNumeros(cedula)) {
+        } else if (!esCedulaEcuatoriana(cedula)) {
           mostrarError(
             "id_usuario",
             "error_cedula",
-            "La cédula solo debe contener números.",
-          );
-          esValido = false;
-        } else if (!esLongitudExacta(cedula, 10)) {
-          mostrarError(
-            "id_usuario",
-            "error_cedula",
-            "La cédula debe tener exactamente 10 dígitos.",
+            "La cédula ingresada no es válida.",
           );
           esValido = false;
         }
