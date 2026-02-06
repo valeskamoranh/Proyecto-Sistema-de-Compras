@@ -196,13 +196,12 @@
     <script src="../js/validaciones.js"></script>
 
     <script>
-      // 1. INICIO: Poner fecha actual
       document.addEventListener("DOMContentLoaded", () => {
         const inputFecha = document.getElementById("fecha_emision");
         if (inputFecha) inputFecha.valueAsDate = new Date();
       });
 
-      // 2. BUSCAR COTIZACIÓN Y LLENAR TABLA AUTOMÁTICAMENTE
+      // BUSCAR COTIZACIÓN Y LLENAR TABLA AUTOMÁTICAMENTE
       async function buscarCotizacion() {
         const idCot = document
           .getElementById("id_cotizacion_search")
@@ -217,14 +216,12 @@
         }
 
         try {
-          // Conexión al Backend
           const res = await fetch(`/api/cotizaciones/${idCot}`);
           if (!res.ok)
             throw new Error("No se encontró la cotización o hubo un error.");
 
           const data = await res.json();
 
-          // Llenar tabla y hacer cálculos
           tbody.innerHTML = "";
           let totalDinero = 0;
           let totalUnis = 0;
@@ -284,7 +281,6 @@
         document.getElementById("total_unidades").value = unidades;
       }
 
-      // 2. Esta sirve para que funcione el botón de basura (🗑)
       function eliminarFilaVisual(btn, cantidad, subtotal) {
         if (!confirm("¿Seguro que desea quitar este ítem de la orden?")) return;
 
@@ -306,12 +302,12 @@
 
         actualizarTotalesVisuales(totalDinero, items, totalUnis);
       }
-      // 3. VALIDACIÓN VISUAL
+      // VALIDACIÓN 
       function validarOrdenCompra() {
         if (typeof limpiarErrores === "function") limpiarErrores();
         let esValido = true;
 
-        // 1. CAPTURA DE VALORES
+        // CAPTURA DE VALORES
         const idBusqueda = document
           .getElementById("id_cotizacion_search")
           .value.trim();
@@ -323,7 +319,7 @@
         const filas = document.querySelectorAll("#tabla-detalle tbody tr");
         const textoTabla = filas[0] ? filas[0].innerText : "";
 
-        // 2. VALIDACIÓN DEL ID (id_cotizacion)
+        // VALIDACIÓN DEL ID 
         if (!idBusqueda) {
           mostrarError(
             "id_cotizacion_search",
@@ -354,7 +350,7 @@
           esValido = false;
         }
 
-        // 5. VALIDACIÓN DE LA TABLA Y TOTALES -
+        // VALIDACIÓN DE LA TABLA Y TOTALES -
         if (
           filas.length === 0 ||
           textoTabla.includes("Use el botón") ||
@@ -384,14 +380,13 @@
         return esValido;
       }
 
-      // 4. GUARDAR ORDEN (ENVIAR A BD)
+      // GUARDAR ORDEN 
       async function guardarOrden() {
         if (!validarOrdenCompra()) return;
 
         const idCot = document.getElementById("id_cotizacion_search").value;
         const filas = document.querySelectorAll("#tabla-detalle tbody tr");
 
-        // Armar JSON exacto para el Controller
         const datos = {
           id_cotizacion: idCot,
           fecha_emision: document.getElementById("fecha_emision").value,

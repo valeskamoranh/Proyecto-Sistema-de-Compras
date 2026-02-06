@@ -143,7 +143,6 @@
     <script src="../js/validaciones.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", cargarAreas);
-      // --- READ: Listar Áreas ---
       async function cargarAreas() {
         try {
           const res = await fetch("/api/areas");
@@ -169,7 +168,6 @@
         }
       }
 
-      // --- UPDATE: Preparar el formulario para editar ---
       function prepararEdicion(id, nombre, responsable) {
         document.getElementById("id_area_edit").value = id;
         document.getElementById("nombre_area").value = nombre;
@@ -187,7 +185,6 @@
         });
       }
 
-      // --- DELETE: Eliminar área ---
       async function eliminarArea(id) {
         if (!confirm(`¿Estás seguro de eliminar el área #${id}?`)) return;
         try {
@@ -266,7 +263,6 @@
         return esValido;
       }
 
-      // --- CREATE / UPDATE: Guardar datos ---
       async function guardarArea() {
         if (!validarArea()) {
           return;

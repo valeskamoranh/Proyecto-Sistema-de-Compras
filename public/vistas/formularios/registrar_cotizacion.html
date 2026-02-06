@@ -236,7 +236,6 @@
 
         const nuevaFila = tbody.rows[0].cloneNode(true);
 
-        // Limpiamos los inputs
         nuevaFila.querySelectorAll("input").forEach((i) => (i.value = ""));
         nuevaFila
           .querySelectorAll(".error-msg")
@@ -287,7 +286,6 @@
             return;
           }
 
-          // Generamos las filas BLOQUEADAS, solo el precio es editable
           datos.detalles.forEach((item) => {
             const fila = document.createElement("tr");
 
@@ -355,7 +353,6 @@
       async function guardarCotizacion() {
         if (!validarCotizacion()) return;
 
-        // Armar el objeto JSON
         const datos = {
           id_requisicion: document
             .getElementById("id_requisicion_search")
@@ -374,7 +371,6 @@
           const cant = fila.querySelector("[name='cantidad[]']").value;
           const precio = fila.querySelector("[name='precio_unitario[]']").value;
 
-          // Solo agregamos si la fila tiene datos completos
           if (idProd && cant && precio) {
             datos.detalles.push({
               id_producto: idProd,

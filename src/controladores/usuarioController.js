@@ -2,7 +2,7 @@ const db = require('../db');
 
 const usuarioController = {};
 
-// 1. REGISTRAR USUARIO
+// REGISTRAR USUARIO
 usuarioController.crearUsuario = async (req, res) => {
     try {
         const { id_usuario, nombre, email, cargo, id_area } = req.body;
@@ -71,7 +71,7 @@ usuarioController.eliminar = async (req, res) => {
     }
 };
 
-//LOGIN
+// LOGIN
 usuarioController.login = async (req, res) => {
     try {
         const { cedula } = req.body; 

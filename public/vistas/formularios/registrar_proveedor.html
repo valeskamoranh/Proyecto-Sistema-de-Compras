@@ -148,7 +148,6 @@
     <script>
       document.addEventListener("DOMContentLoaded", cargarProveedores);
 
-      //  FUNCIÓN CARGAR 
       async function cargarProveedores() {
         try {
           const res = await fetch("/api/proveedores");
@@ -250,7 +249,6 @@
         return esValido;
       }
 
-// --- GUARDAR (CREAR O EDITAR) ---
         async function guardarProveedor() {
             if (!validarProveedor()) return;
 
@@ -286,7 +284,6 @@
             }
         }
 
-        // --- PREPARAR EDICIÓN ---
         function prepararEdicion(id, nombre, ruc, telefono, email) {
             document.getElementById("id_proveedor_edit").value = id;
             document.getElementById("nombre").value = nombre;
@@ -301,7 +298,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- RESETEAR FORMULARIO ---
         function resetForm() {
             document.getElementById("form-proveedor").reset();
             document.getElementById("id_proveedor_edit").value = "";
@@ -311,7 +307,6 @@
             limpiarErrores();
         }
 
-        // --- ELIMINAR ---
         async function eliminarProveedor(id) {
             if(!confirm("¿Eliminar este proveedor?")) return;
             try {

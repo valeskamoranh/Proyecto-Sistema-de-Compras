@@ -60,7 +60,7 @@ cotizacionController.crearCotizacion = async (req, res) => {
     }
 };
 
-// 1. LISTAR (Para la tabla principal)
+// LISTAR 
 cotizacionController.listar = async (req, res) => {
     try {
         const sql = `
@@ -84,7 +84,7 @@ cotizacionController.listar = async (req, res) => {
     }
 };
 
-// 2. DETALLE (Para el Modal)
+// DETALLE (Para el Modal)
 cotizacionController.obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;

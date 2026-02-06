@@ -83,7 +83,7 @@ recepcionController.crearRecepcion = async (req, res) => {
     }
 };
 
-// 1. LISTAR 
+// LISTAR 
 recepcionController.listar = async (req, res) => {
     try {
         const sql = `
@@ -105,7 +105,7 @@ recepcionController.listar = async (req, res) => {
     }
 };
 
-// 2. DETALLE (Para el Modal)
+// DETALLE (Para el Modal)
 recepcionController.obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -136,7 +136,7 @@ recepcionController.obtenerPorId = async (req, res) => {
     }
 };
 
-// 3. ELIMINAR (Borrado físico por si hubo error de dedo en la entrada)
+// ELIMINAR (Borrado físico por si hubo error de dedo en la entrada)
 recepcionController.eliminar = async (req, res) => {
     try {
         const { id } = req.params;

@@ -46,7 +46,7 @@ requisicionController.crearRequisicion = async (req, res) => {
     }
 };
 
-// 2. LISTAR (Para la tabla visual)
+// LISTAR 
 requisicionController.listar = async (req, res) => {
     try {
 
@@ -72,7 +72,7 @@ requisicionController.listar = async (req, res) => {
     }
 };
 
-// 3. OBTENER POR ID (Para el Modal "Ver")
+// OBTENER POR ID (Para el Modal "Ver")
 requisicionController.obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -109,7 +109,7 @@ requisicionController.obtenerPorId = async (req, res) => {
     }
 };
 
-// 4. RECHAZAR 
+// RECHAZAR 
 requisicionController.rechazar = async (req, res) => {
     try {
         const { id } = req.params;
@@ -122,11 +122,10 @@ requisicionController.rechazar = async (req, res) => {
     }
 };
 
-// 5. APROBAR
+// APROBAR
 requisicionController.aprobar = async (req, res) => {
     try {
         const { id } = req.params;
-        // Cambiamos el estado a 'Aprobada'
         const sql = "UPDATE REQUISICION SET estado = 'Aprobada' WHERE id_requisicion = ?";
         await db.query(sql, [id]);
         res.json({ mensaje: `Requisición N° ${id} APROBADA correctamente.` });

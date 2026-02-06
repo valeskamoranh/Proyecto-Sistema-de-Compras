@@ -186,7 +186,6 @@
         const unidad = document.getElementById("unidad_medida").value;
         const cantidad = document.getElementById("cantidad_unidad").value;
 
-        // (Opcional) Descripción
         const descripcion = document.getElementById("descripcion").value.trim();
 
         // --- VALIDAR NOMBRE ---
@@ -236,7 +235,6 @@
         return esValido;
       }
 
-      // 1. CARGAR PRODUCTOS (READ)
       async function cargarProductos() {
         try {
           const res = await fetch("/api/productos");
@@ -276,7 +274,6 @@
         }
       }
 
-      // 2. GUARDAR (CREATE / UPDATE)
       async function guardarProducto() {
         if (!validarProducto()) return;
 
@@ -314,7 +311,6 @@
         }
       }
 
-      // 3. EDITAR
       function prepararEdicion(id, nombre, descripcion, unidad, cantidad) {
         document.getElementById("id_producto_edit").value = id;
         document.getElementById("nombre_producto").value = nombre;
@@ -332,7 +328,6 @@
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
-      // 4. ELIMINAR
       async function eliminarProducto(id) {
         if (!confirm("¿Estás seguro de eliminar este producto?")) return;
         try {

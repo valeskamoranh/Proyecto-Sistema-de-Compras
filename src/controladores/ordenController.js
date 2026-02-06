@@ -15,7 +15,7 @@ ordenController.crearOrden = async (req, res) => {
         // 2. Total de unidades 
         const total_unidades = detalles.reduce((suma, item) => suma + parseFloat(item.cantidad), 0);
 
-        // --- PASO 1: INSERTAR CABECERA (ORDEN_COMPRA) ---
+        // --- PASO 1: INSERTAR CABECERA ---
         const sqlOrden = `
             INSERT INTO ORDEN_COMPRA 
             (id_cotizacion, fecha_emision, estado_OC, monto_total_OC, cantidad_items, total_unidades) 
@@ -74,13 +74,13 @@ ordenController.obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // 1. Cabecera (Sin JOIN de proveedor para evitar errores si es null)
+        // 1. Cabecera 
         const sqlCabecera = "SELECT * FROM ORDEN_COMPRA WHERE id_OC = ?";
         const [cabeceras] = await db.query(sqlCabecera, [id]);
 
         if (cabeceras.length === 0) return res.status(404).json({ mensaje: "Orden no encontrada" });
 
-        // 2. Detalles (Traemos nombre del producto para mostrar en tabla)
+        // 2. Detalles 
         const sqlDetalles = `
             SELECT doc.*, p.nombre_producto, p.unidad_medida
             FROM DETALLE_ORDEN_COMPRA doc
@@ -99,7 +99,7 @@ ordenController.obtenerPorId = async (req, res) => {
     }
 };
 
-// 1. LISTAR TODAS LAS ÓRDENES (READ)
+// ISTAR TODAS LAS ÓRDENES (READ)
 ordenController.listar = async (req, res) => {
     try {
         const sql = "SELECT * FROM ORDEN_COMPRA ORDER BY id_OC DESC";
@@ -111,7 +111,7 @@ ordenController.listar = async (req, res) => {
     }
 };
 
-// 2. ANULAR ORDEN (DELETE LÓGICO / UPDATE)
+// ANULAR ORDEN (DELETE LÓGICO / UPDATE)
 ordenController.anular = async (req, res) => {
     try {
         const { id } = req.params;

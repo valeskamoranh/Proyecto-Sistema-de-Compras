@@ -148,12 +148,10 @@
         document.getElementById("fecha_recepcion").valueAsDate = new Date();
       });
 
-      // 1. BUSCAR ORDEN (AUTOMÁTICO)
       async function buscarOrden() {
         const idOC = document.getElementById("id_oc_search").value.trim();
         const tbody = document.querySelector("#tabla-detalle tbody");
 
-        // Limpiamos errores al buscar de nuevo
         if (typeof limpiarErrores === "function") limpiarErrores();
         limpiarErroresVisuales();
 
@@ -218,20 +216,19 @@
       }
 
       function validarRecepcion() {
-        // Limpieza inicial
         if (typeof limpiarErrores === "function") limpiarErrores();
         if (typeof limpiarErroresVisuales === "function")
           limpiarErroresVisuales();
 
         let esValido = true;
 
-        // A. VALIDAR CABECERA
+        // VALIDAR CABECERA
         const inputOc = document.getElementById("id_oc_search");
         const fecha = document.getElementById("fecha_recepcion").value;
         const estado = document.getElementById("estado_recepcion").value;
         const filas = document.querySelectorAll("#tabla-detalle tbody tr");
 
-        // 1. Validar ID
+        // Validar ID
         if (!inputOc || !inputOc.value.trim()) {
           mostrarError(
             "id_oc_search",
@@ -241,7 +238,7 @@
           esValido = false;
         }
 
-        // 2. Validar Fecha
+        // Validar Fecha
         if (esVacio(fecha)) {
           mostrarError(
             "fecha_recepcion",
@@ -258,7 +255,7 @@
           esValido = false;
         }
 
-        // 3. Validar Estado
+        // Validar Estado
         if (!estado) {
           mostrarError(
             "estado_recepcion",
@@ -268,10 +265,9 @@
           esValido = false;
         }
 
-        // B. VALIDAR TABLA
+        // VALIDAR TABLA
         const primeraFilaTexto = filas[0] ? filas[0].innerText : "";
 
-        // Verificamos si la tabla está vacía o tiene el mensaje de placeholder
         if (
           filas.length === 0 ||
           primeraFilaTexto.includes("Cargar") ||
@@ -302,7 +298,6 @@
         return esValido;
       }
 
-      // 3. GUARDAR
       async function guardarRecepcion() {
         if (!validarRecepcion()) return;
 

@@ -5,7 +5,6 @@
     <title>Listado de Órdenes de Compra</title>
     <link rel="stylesheet" href="../css/styles.css" />
     <style>
-      /* Estilos de la tabla similares a los que ya tienes */
       #tabla-listado {
         width: 100%;
         border-collapse: collapse;
@@ -26,7 +25,6 @@
         text-align: center;
       }
 
-      /* Badges de estado */
       .badge {
         padding: 5px 10px;
         border-radius: 15px;
@@ -36,28 +34,28 @@
         border: 1px solid transparent;
       }
 
-      /* 1. Emitida: Azul (Estado inicial) */
+      /* 1. Emitida: */
       .estado-emitida {
         background: #e3f2fd;
         color: #1976d2;
         border-color: #bbdefb;
       }
 
-      /* 2. En Proceso: Naranja/Amarillo (Está ocurriendo) */
+      /* 2. En Proceso: */
       .estado-en-proceso {
         background: #fff3cd;
         color: #856404;
         border-color: #ffeeba;
       }
 
-      /* 3. Entregada: Verde (Finalizado con éxito) */
+      /* 3. Entregada: */
       .estado-entregada {
         background: #d4edda;
         color: #155724;
         border-color: #c3e6cb;
       }
 
-      /* 4. Anulada: Rojo (Cancelado) */
+      /* 4. Anulada: Rojo */
       .estado-anulada {
         background: #ffebee;
         color: #c62828;
@@ -175,7 +173,7 @@
 
           const data = await res.json();
 
-          // 1. Llenar info general
+          // 1. Llenar informacion general
           document.getElementById("modal-titulo").innerText =
             `Orden de Compra N° ${data.id_OC}`;
           document.getElementById("modal-info-general").innerHTML = `
