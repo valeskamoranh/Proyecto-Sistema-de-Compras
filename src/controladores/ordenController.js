@@ -124,4 +124,32 @@ ordenController.anular = async (req, res) => {
     }
 };
 
+//Simulacion Contabilidad
+ordenController.obtenerParaContabilidad = async (req, res) => {
+    try {
+        const sql = `
+            SELECT 
+                oc.id_OC, 
+                p.nombre AS nombre_proveedor, 
+                oc.fecha_emision, 
+                oc.estado_OC,
+                SUM(dc.cantidad * dc.precio_unitario) as monto_total
+            FROM ORDEN_COMPRA oc
+            JOIN COTIZACION c ON oc.id_cotizacion = c.id_cotizacion
+            JOIN PROVEEDOR p ON c.id_proveedor = p.id_proveedor
+            JOIN DETALLE_COTIZACION dc ON c.id_cotizacion = dc.id_cotizacion
+            WHERE oc.estado_OC != 'Anulada'
+            GROUP BY oc.id_OC, p.nombre, oc.fecha_emision, oc.estado_OC
+            ORDER BY oc.fecha_emision DESC
+        `;
+        
+        const [ordenes] = await db.query(sql); 
+        res.json(ordenes);
+
+    } catch (error) {
+        console.error("Error contabilidad:", error);
+        res.status(500).json({ mensaje: "Error al obtener órdenes" });
+    }
+};
+
 module.exports = ordenController;

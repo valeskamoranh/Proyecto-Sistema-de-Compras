@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ingreso a Inventario</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .btn-success {
+      background-color: #28a745; color: white; border: none; 
+      padding: 8px 12px; border-radius: 4px; cursor: pointer;
+    }
+    .btn-success:hover { background-color: #218838; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <a href="../formularios/menu_principal.html" class="btn-regresar">⬅ Regresar</a>
+    <h2>Registros de Ingreso </h2>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Recepción</th>
+          <th>Producto</th>
+          <th>Fecha de ingreso</th>
+          <th>Cantidad ingresada</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-cuerpo">
+        </tbody>
+    </table>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", cargarDatosSimulados);
+
+    async function cargarDatosSimulados() {
+      try {
+        const respuesta = await fetch('/api/recepciones/simulacion-inventario');
+        const datos = await respuesta.json();
+        
+        const tbody = document.getElementById("tabla-cuerpo");
+        tbody.innerHTML = ""; 
+
+        if (datos.length === 0) {
+          tbody.innerHTML = "<tr><td colspan='5' style='text-align:center'>No hay recepciones pendientes de ingreso.</td></tr>";
+          return;
+        }
+
+        datos.forEach((item) => {
+          const fechaBonita = new Date(item.fecha_recepcion).toISOString().split('T')[0];
+
+          tbody.innerHTML += `
+            <tr id="fila-${item.id_recepcion}-${item.nombre_producto.replace(/\s/g, '')}"> 
+              <td style="text-align:center; font-weight:bold;">#${item.id_recepcion}</td>
+              <td>${item.nombre_producto}</td>
+              <td>${fechaBonita}</td>
+              <td style="text-align:center;">${item.cantidad_recibida}</td>
+              <td style="text-align:center;">
+                <button class="btn btn-success" onclick="simularEnvio(this)">
+                  Enviar
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+        alert("Error al cargar los datos del servidor.");
+      }
+    }
+
+    function simularEnvio(boton) {
+      if(confirm("¿Confirmar ingreso al sistema externo?")) {
+        alert("Datos enviados exitosamente al sistema de Inventario.");
+        
+        const fila = boton.closest("tr");
+        fila.style.backgroundColor = "#d4edda"; 
+        setTimeout(() => fila.remove(), 500);   
+      }
+    }
+  </script>
+
+</body>
+</html>
+

@@ -154,4 +154,23 @@ recepcionController.eliminar = async (req, res) => {
     }
 };
 
+
+// Obtener datos para la vista de Inventario
+recepcionController.obtenerParaInventario = async (req, res) => {
+    try {
+        const sql = `
+            SELECT r.id_recepcion, p.nombre_producto, r.fecha_recepcion, dr.cantidad_recibida
+            FROM RECEPCION r
+            JOIN DETALLE_RECEPCION dr ON r.id_recepcion = dr.id_recepcion
+            JOIN PRODUCTO p ON dr.id_producto = p.id_producto
+            WHERE r.estado_recepcion = 'Completa'
+            ORDER BY r.fecha_recepcion DESC
+        `;
+        const [resultados] = await db.query(sql);
+        res.json(resultados);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error al obtener datos" });
+    }
+};
 module.exports = recepcionController;

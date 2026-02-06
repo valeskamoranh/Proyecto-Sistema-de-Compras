@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Integración con Contabilidad</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      .badge { padding: 5px 10px; border-radius: 15px; font-size: 0.85em; font-weight: bold; }
+      .badge-pendiente { background-color: #ffeeba; color: #856404; }
+      .badge-procesado { background-color: #d4edda; color: #155724; }
+      
+      .btn:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.6; }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <a href="../formularios/menu_principal.html" class="btn-regresar" style="margin-bottom: 15px; display:inline-block;">⬅ Regresar</a>
+      
+      <h1 class="titulo-seccion">Integración Externa – Contabilidad</h1>
+
+      <p class="descripcion">
+        Desde esta pantalla se envían las órdenes de compra aprobadas al sistema
+        contable para su registro financiero.
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Orden</th>
+              <th>Proveedor</th>
+              <th>Sistema Origen</th>
+              <th>Tipo Evento</th>
+              <th>Fecha Emisión</th>
+              <th>Monto Total</th>
+              <th>Estado Contable</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabla-contabilidad">
+            </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", cargarDatosContables);
+
+      async function cargarDatosContables() {
+        try {
+            const respuesta = await fetch('/api/ordenes/integracion-contabilidad');
+            
+            if (!respuesta.ok) throw new Error("Error de conexión");
+            
+            const ordenes = await respuesta.json();
+            const tbody = document.getElementById("tabla-contabilidad");
+            tbody.innerHTML = "";
+
+            if(ordenes.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='8' style='text-align:center'>No hay órdenes registradas.</td></tr>";
+                return;
+            }
+
+            ordenes.forEach(orden => {
+                const fecha = new Date(orden.fecha_emision).toISOString().split('T')[0];
+                const total = parseFloat(orden.monto_total).toFixed(2);
+                
+                let estadoContable = "Pendiente";
+                let claseBadge = "badge-pendiente";
+                let btnDisabled = "";
+                let btnTexto = "Enviar";
+                let fechaProcesado = "-";
+
+                const yaProcesada = localStorage.getItem(`conta_orden_${orden.id_OC}`);
+
+                if (yaProcesada) {
+                    estadoContable = "Procesado";
+                    claseBadge = "badge-procesado";
+                    btnDisabled = "disabled";
+                    btnTexto = "Procesado";
+                }
+
+                tbody.innerHTML += `
+                    <tr id="fila-${orden.id_OC}">
+                        <td><strong>${orden.id_OC}</strong></td>
+                        <td>${orden.nombre_proveedor}</td>
+                        <td>Compras</td>
+                        <td>Registro de OC</td>
+                        <td>${fecha}</td>
+                        <td>$${total}</td>
+                        <td><span class="badge ${claseBadge}" id="badge-${orden.id_OC}">${estadoContable}</span></td>
+                        <td>
+                            <button class="btn btn-success" 
+                                ${btnDisabled}
+                                onclick="simularEnvio(this, '${orden.id_OC}', '${total}')">
+                                ${btnTexto}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+        } catch (error) {
+            console.error(error);
+            alert("No se pudieron cargar las órdenes. Revisa la consola.");
+        }
+      }
+
+      function simularEnvio(boton, idOrden, monto) {
+        if(!confirm(`¿Enviar Orden #${idOrden} por $${monto} al sistema contable?`)) return;
+
+        boton.textContent = "Enviando...";
+        
+        setTimeout(() => {
+            alert(`ÉXITO: Asiento contable generado para la Orden #${idOrden}.`);
+            
+            boton.textContent = "Procesado";
+            boton.disabled = true;
+            
+            const badge = document.getElementById(`badge-${idOrden}`);
+            badge.textContent = "Procesado";
+            badge.className = "badge badge-procesado";
+
+            localStorage.setItem(`conta_orden_${idOrden}`, "true");
+
+        }, 800); // Pequeña demora para realismo
+      }
+    </script>
+  </body>
+</html>
