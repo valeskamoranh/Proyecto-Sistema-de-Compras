@@ -30,7 +30,7 @@
       </svg>
       Regresar al Menú Principal
     </a>
-    <form class="container" onsubmit="return validarRequisicion();" novalidate>
+    <form id="form-requisicion" class="container" novalidate>
       <h1>Registrar Requisición</h1>
 
       <div class="form-group">
@@ -60,6 +60,7 @@
           <option value="Aprobada">Aprobada</option>
           <option value="Rechazada">Rechazada</option>
           <option value="En proceso">En proceso</option>
+          <option value="Atendida">Atendida</option>
         </select>
         <div id="error_estado" class="error-msg"></div>
       </div>
@@ -86,11 +87,13 @@
         <tbody>
           <tr>
             <td>
-              <select name="id_producto[]" class="input-texto" required>
+              <select
+                name="id_producto[]"
+                class="input-texto"
+                required
+                onchange="actualizarUnidad(this)"
+              >
                 <option value="">Seleccione producto</option>
-                <option value="1">Computadora</option>
-                <option value="2">Silla</option>
-                <option value="3">Papel Higienico</option>
               </select>
               <div class="error-msg"></div>
             </td>
@@ -105,13 +108,14 @@
               <div class="error-msg"></div>
             </td>
             <td>
-              <select name="unidad_medida[]" class="input-texto" required>
-                <option value="">Seleccione</option>
-                <option value="Caja">Caja</option>
-                <option value="Paquete">Paquete</option>
-                <option value="Unidad">Unidad</option>
-                <option value="Litro">Litro</option>
-              </select>
+              <input
+                type="text"
+                name="unidad_medida[]"
+                class="input-texto"
+                readonly
+                placeholder="Automático"
+                style="background-color: #f0f0f0; cursor: not-allowed"
+              />
               <div class="error-msg"></div>
             </td>
             <td>
@@ -126,7 +130,7 @@
       </button>
       <br /><br />
 
-      <button type="submit" class="btn-guardar">
+      <button type="button" class="btn-guardar" onclick="guardarRequisicion()">
         <svg
           viewBox="0 0 24 24"
           width="20"
@@ -146,27 +150,82 @@
 
     <script>
       // --- FUNCIONES DE TABLA ---
+      let listaProductosCache = [];
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await cargarProductosEnSelects();
+      });
+
+      async function cargarProductosEnSelects() {
+        try {
+          const res = await fetch("/api/productos");
+          listaProductosCache = await res.json();
+
+          const selectInicial = document.querySelector(
+            "select[name='id_producto[]']",
+          );
+          llenarSelect(selectInicial);
+        } catch (error) {
+          console.error("Error cargando productos:", error);
+        }
+      }
+
+      function llenarSelect(selectElement) {
+        selectElement.innerHTML =
+          '<option value="">Seleccione producto</option>';
+        listaProductosCache.forEach((prod) => {
+          selectElement.innerHTML += `<option value="${prod.id_producto}">${prod.nombre_producto}</option>`;
+        });
+      }
+
+      function actualizarUnidad(selectProducto) {
+        const idSeleccionado = selectProducto.value;
+        const producto = listaProductosCache.find(
+          (p) => p.id_producto == idSeleccionado,
+        );
+
+        if (producto) {
+          const fila = selectProducto.closest("tr");
+          const inputUnidad = fila.querySelector(
+            "input[name='unidad_medida[]']",
+          );
+
+          if (producto) {
+            inputUnidad.value = producto.unidad_medida;
+          } else {
+            inputUnidad.value = "";
+          }
+        }
+      }
+
+      // AGREGAR FILA
       function agregarFila() {
         const tbody = document.querySelector("#tabla-detalle tbody");
-        const nuevaFila = tbody.rows[0].cloneNode(true);
 
-        nuevaFila
-          .querySelectorAll("input, select")
-          .forEach((input) => (input.value = ""));
+        const primeraFila = tbody.rows[0];
+        const nuevaFila = primeraFila.cloneNode(true);
+
+        nuevaFila.querySelectorAll("input").forEach((i) => (i.value = ""));
+        nuevaFila.querySelectorAll("select").forEach((s) => (s.value = ""));
         nuevaFila
           .querySelectorAll(".error-msg")
-          .forEach((div) => (div.style.display = "none"));
+          .forEach((e) => (e.style.display = "none"));
         nuevaFila
           .querySelectorAll(".input-error")
-          .forEach((input) => input.classList.remove("input-error"));
+          .forEach((i) => i.classList.remove("input-error"));
+
+        const selectProd = nuevaFila.querySelector(
+          "select[name='id_producto[]']",
+        );
+        llenarSelect(selectProd);
 
         tbody.appendChild(nuevaFila);
       }
 
-      function eliminarFila(boton) {
+      function eliminarFila(btn) {
         const tbody = document.querySelector("#tabla-detalle tbody");
         if (tbody.rows.length > 1) {
-          boton.closest("tr").remove();
+          btn.closest("tr").remove();
         } else {
           alert("Debe mantener al menos un producto.");
         }
@@ -204,7 +263,6 @@
             "El usuario solicitante es obligatorio.",
           );
           esValido = false;
-          
         } else if (!esCedulaEcuatoriana(idUsuario)) {
           mostrarError(
             "id_usuario",
@@ -279,6 +337,89 @@
         }
 
         return esValido;
+      }
+
+      // GUARDAR TODO (Maestro + Detalle)
+      async function guardarRequisicion() {
+        if (!validarRequisicion()) return;
+
+        // A. Capturar Cabecera
+        const cabecera = {
+          id_usuario: document.getElementById("id_usuario").value.trim(),
+          fecha: document.getElementById("fecha").value,
+          estado: document.getElementById("estado").value,
+          justificacion: document.getElementById("justificacion").value.trim(),
+          detalles: [],
+        };
+
+        // B. Capturar Tabla (Detalles)
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        filas.forEach((fila) => {
+          const idProd = fila.querySelector(
+            "select[name='id_producto[]']",
+          ).value;
+          const cant = fila.querySelector("input[name='cantidad[]']").value;
+          const unidad = fila.querySelector("[name='unidad_medida[]']").value;
+
+          if (idProd && cant) {
+            cabecera.detalles.push({
+              id_producto: idProd,
+              cantidad: cant,
+              unidad_medida: unidad,
+            });
+          }
+        });
+
+        // C. Enviar al Servidor
+        try {
+          const respuesta = await fetch("/api/requisiciones", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cabecera),
+          });
+
+          const resultado = await respuesta.json();
+
+          if (respuesta.ok) {
+            alert(" " + resultado.mensaje);
+            try {
+              document.getElementById("form-requisicion").reset();
+
+              const tbody = document.querySelector("#tabla-detalle tbody");
+
+              while (tbody.rows.length > 1) {
+                tbody.deleteRow(tbody.rows.length - 1);
+              }
+
+              const filaUno = tbody.rows[0];
+              filaUno
+                .querySelectorAll("input, textarea")
+                .forEach((el) => (el.value = ""));
+              filaUno
+                .querySelectorAll("select")
+                .forEach((el) => (el.value = ""));
+
+              filaUno
+                .querySelectorAll(".error-msg")
+                .forEach((e) => (e.style.display = "none"));
+              filaUno
+                .querySelectorAll(".input-error")
+                .forEach((e) => e.classList.remove("input-error"));
+            } catch (errLimpieza) {
+              console.warn(
+                "Se guardó el dato, pero hubo error limpiando el form:",
+                errLimpieza,
+              );
+            }
+          } else {
+            alert(" ERROR: " + resultado.mensaje);
+          }
+        } catch (error) {
+          console.error("Error REAL en consola:", error); 
+          alert(
+            "Error procesando la respuesta (aunque es posible que se haya guardado).",
+          );
+        }
       }
     </script>
   </body>

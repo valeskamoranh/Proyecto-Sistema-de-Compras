@@ -34,12 +34,41 @@
       </svg>
       Regresar al Menú Principal
     </a>
-    <form class="container" onsubmit="return validarOrdenCompra();" novalidate>
+    <form id="form-orden" class="container" novalidate>
       <h1>Registrar Orden de Compra</h1>
 
-      <div class="form-group">
-        <label for="id_cotizacion">No. Cotización</label>
-        <input type="number" id="id_cotizacion" name="id_cotizacion" required />
+      <div
+        class="form-group"
+        style="
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+        "
+      >
+        <label for="id_cotizacion_search"> Buscar Cotización Aprobada</label>
+        <div class="search-group">
+          <input
+            type="number"
+            id="id_cotizacion_search"
+            name="id_cotizacion"
+            required
+          />
+          <button type="button" class="btn-search" onclick="buscarCotizacion()">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Cargar Datos
+          </button>
+        </div>
         <div id="error_cotizacion" class="error-msg"></div>
       </div>
 
@@ -76,12 +105,7 @@
         <tbody>
           <tr>
             <td>
-              <select name="id_producto[]" class="input-texto" required>
-                <option value="">Seleccione producto</option>
-                <option value="1">Laptop HP</option>
-                <option value="2">Mouse Inalámbrico</option>
-                <option value="3">Teclado Mecánico</option>
-              </select>
+              <input type="text" name="id_producto[]" class="input-texto" required>
               <div class="error-msg"></div>
             </td>
             <td>
@@ -115,9 +139,6 @@
         </tbody>
       </table>
 
-      <button type="button" class="btn-secondary" onclick="agregarFila()">
-        ➕ Agregar producto
-      </button>
       <br /><br />
 
       <div class="form-group">
@@ -156,7 +177,7 @@
         <div id="error_monto_total" class="error-msg"></div>
       </div>
 
-      <button type="submit" class="btn-guardar">
+      <button type="button" class="btn-guardar" onclick="guardarOrden()">
         <svg
           viewBox="0 0 24 24"
           width="20"
@@ -175,185 +196,259 @@
     <script src="../js/validaciones.js"></script>
 
     <script>
-      // --- FUNCIONES DE CÁLCULO Y TABLA ---
+      // 1. INICIO: Poner fecha actual
+      document.addEventListener("DOMContentLoaded", () => {
+        const inputFecha = document.getElementById("fecha_emision");
+        if (inputFecha) inputFecha.valueAsDate = new Date();
+      });
 
-      function calcularTotales() {
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
-        let sumaTotal = 0;
-        let conteoItems = 0;
-        let sumaUnidades = 0;
+      // 2. BUSCAR COTIZACIÓN Y LLENAR TABLA AUTOMÁTICAMENTE
+      async function buscarCotizacion() {
+        const idCot = document
+          .getElementById("id_cotizacion_search")
+          .value.trim();
+        const tbody = document.querySelector("#tabla-detalle tbody");
 
-        filas.forEach((fila) => {
-          const cant = parseFloat(
-            fila.querySelector("[name='cantidad[]']").value,
-          );
-          const prec = parseFloat(
-            fila.querySelector("[name='precio_unitario[]']").value,
-          );
+        if (typeof limpiarErrores === "function") limpiarErrores();
 
-          // Si la fila tiene valores válidos, sumamos
-          if (!isNaN(cant) && !isNaN(prec)) {
-            sumaTotal += cant * prec;
+        if (!idCot) {
+          alert(" Por favor ingrese el número de cotización.");
+          return;
+        }
+
+        try {
+          // Conexión al Backend
+          const res = await fetch(`/api/cotizaciones/${idCot}`);
+          if (!res.ok)
+            throw new Error("No se encontró la cotización o hubo un error.");
+
+          const data = await res.json();
+
+          // Llenar tabla y hacer cálculos
+          tbody.innerHTML = "";
+          let totalDinero = 0;
+          let totalUnis = 0;
+          let items = 0;
+
+          if (!data.detalles || data.detalles.length === 0) {
+            alert("Esta cotización no tiene productos.");
+            return;
           }
-          conteoItems++; // Cuenta cada fila como un ítem
-          sumaUnidades += cant; // +N unidades al total
-        });
 
-        document.getElementById("monto_total_oc").value = sumaTotal.toFixed(2);
-        document.getElementById("cantidad_items").value = conteoItems;
-        document.getElementById("total_unidades").value = sumaUnidades;
-      }
+          data.detalles.forEach((d) => {
+            const cantidad = parseFloat(d.cantidad);
+            const precio = parseFloat(d.precio_unitario);
+            const subtotal = cantidad * precio;
 
-      function agregarFila() {
-        const tbody = document.querySelector("#tabla-detalle tbody");
-        const nuevaFila = tbody.rows[0].cloneNode(true);
+            totalDinero += subtotal;
+            totalUnis += cantidad;
+            items++;
 
-        nuevaFila
-          .querySelectorAll("input, select")
-          .forEach((input) => (input.value = ""));
-        nuevaFila
-          .querySelectorAll(".error-msg")
-          .forEach((div) => (div.style.display = "none"));
-        nuevaFila
-          .querySelectorAll(".input-error")
-          .forEach((input) => input.classList.remove("input-error"));
+            const fila = `
+                     <tr>
+                        <td>
+                            <input type="hidden" class="id-prod" value="${d.id_producto}">
+                            <input type="text" class="input-tabla" value="${d.nombre_producto}" readonly title="${d.unidad_medida}">
+                        </td>
+                        <td>
+                            <input type="number" class="cant input-tabla" value="${d.cantidad}" readonly style="text-align: center;">
+                        </td>
+                        <td>
+                            <input type="number" class="precio input-tabla" value="${precio.toFixed(2)}" readonly style="text-align: center;"> 
+                        </td>
+                        <td>
+                            <button type="button" class="btn-delete" onclick="eliminarFilaVisual(this, ${cantidad}, ${subtotal})" title="Quitar item">
+                                🗑
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            tbody.innerHTML += fila;
+          });
 
-        tbody.appendChild(nuevaFila);
-        calcularTotales(); // Actualizar contador de ítems
-      }
+          actualizarTotalesVisuales(totalDinero, items, totalUnis);
 
-      function eliminarFila(boton) {
-        const tbody = document.querySelector("#tabla-detalle tbody");
-        if (tbody.rows.length > 1) {
-          boton.closest("tr").remove();
-          calcularTotales(); // Recalcular total y cantidad de ítems
-        } else {
-          alert("La orden debe tener al menos un producto.");
+          document.getElementById("error_tabla").style.display = "none";
+          alert(" Cotización cargada correctamente.");
+        } catch (error) {
+          console.error(error);
+          alert(" " + error.message);
+          tbody.innerHTML =
+            '<tr><td colspan="4" style="text-align:center; color:red">Intente con otro número.</td></tr>';
         }
       }
 
-      // --- VALIDACIONES ---
-
-      function mostrarErrorFila(input, mensaje) {
-        input.classList.add("input-error");
-        const divError = input.parentElement.querySelector(".error-msg");
-        if (divError) {
-          divError.innerText = mensaje;
-          divError.style.display = "block";
-        }
+      function actualizarTotalesVisuales(dinero, items, unidades) {
+        document.getElementById("monto_total_oc").value = dinero.toFixed(2);
+        document.getElementById("cantidad_items").value = items;
+        document.getElementById("total_unidades").value = unidades;
       }
 
+      // 2. Esta sirve para que funcione el botón de basura (🗑)
+      function eliminarFilaVisual(btn, cantidad, subtotal) {
+        if (!confirm("¿Seguro que desea quitar este ítem de la orden?")) return;
+
+        btn.closest("tr").remove();
+
+        let totalDinero =
+          parseFloat(document.getElementById("monto_total_oc").value) || 0;
+        let totalUnis =
+          parseFloat(document.getElementById("total_unidades").value) || 0;
+        let items =
+          parseInt(document.getElementById("cantidad_items").value) || 0;
+
+        totalDinero -= subtotal;
+        totalUnis -= cantidad;
+        items--;
+
+        if (items < 0) items = 0;
+        if (totalDinero < 0) totalDinero = 0;
+
+        actualizarTotalesVisuales(totalDinero, items, totalUnis);
+      }
+      // 3. VALIDACIÓN VISUAL
       function validarOrdenCompra() {
-        limpiarErrores();
+        if (typeof limpiarErrores === "function") limpiarErrores();
         let esValido = true;
 
-        // 1. VALIDAR CABECERA
-        const idCotizacion = document
-          .getElementById("id_cotizacion")
+        // 1. CAPTURA DE VALORES
+        const idBusqueda = document
+          .getElementById("id_cotizacion_search")
           .value.trim();
         const fecha = document.getElementById("fecha_emision").value;
         const estado = document.getElementById("estado_OC").value;
+        const nProductos = document.getElementById("cantidad_items").value;
+        const totalUnidades = document.getElementById("total_unidades").value;
+        const montoTotal = document.getElementById("monto_total_oc").value;
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        const textoTabla = filas[0] ? filas[0].innerText : "";
 
-        if (esVacio(idCotizacion)) {
+        // 2. VALIDACIÓN DEL ID (id_cotizacion)
+        if (!idBusqueda) {
           mostrarError(
-            "id_cotizacion",
+            "id_cotizacion_search",
             "error_cotizacion",
-            "El número de cotización es obligatorio.",
-          );
-          esValido = false;
-        } else if (!esSoloNumeros(idCotizacion)) {
-          mostrarError(
-            "id_cotizacion",
-            "error_cotizacion",
-            "El ID debe ser numérico.",
+            "Debe buscar una cotización.",
           );
           esValido = false;
         }
 
-        // --- VALIDAR FECHA EMISIÓN ---
         if (esVacio(fecha)) {
           mostrarError(
             "fecha_emision",
             "error_fecha",
-            "La fecha de emisión es obligatoria.",
+            "La fecha es obligatoria.",
           );
           esValido = false;
         } else if (!esFechaNoFutura(fecha)) {
           mostrarError(
             "fecha_emision",
             "error_fecha",
-            "La fecha no puede ser futura.",
+            "La fecha del documento no puede ser futura.",
           );
           esValido = false;
         }
 
-        if (esVacio(estado)) {
-          mostrarError(
-            "estado_OC",
-            "error_estado",
-            "Debe seleccionar un estado.",
-          );
+        if (!estado) {
+          mostrarError("estado_OC", "error_estado", "Seleccione un estado.");
           esValido = false;
         }
 
-        // 2. VALIDAR TABLA DETALLES
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
-        const errorTabla = document.getElementById("error_tabla");
-
-        if (filas.length === 0) {
-          errorTabla.innerText = "Debe agregar productos a la orden.";
-          errorTabla.style.display = "block";
+        // 5. VALIDACIÓN DE LA TABLA Y TOTALES -
+        if (
+          filas.length === 0 ||
+          textoTabla.includes("Use el botón") ||
+          textoTabla.includes("Intente")
+        ) {
+          const errorTabla = document.getElementById("error_tabla");
+          if (errorTabla) {
+            errorTabla.innerText =
+              "Debe cargar una cotización válida antes de guardar.";
+            errorTabla.style.display = "block";
+          }
           esValido = false;
         } else {
-          filas.forEach((fila) => {
-            const inputProd = fila.querySelector("[name='id_producto[]']");
-            const inputCant = fila.querySelector("[name='cantidad[]']");
-            const inputPrec = fila.querySelector("[name='precio_unitario[]']");
+          if (parseInt(nProductos) <= 0) esValido = false;
+          if (parseFloat(totalUnidades) <= 0) esValido = false;
 
-            // Producto
-            if (esVacio(inputProd.value)) {
-              mostrarErrorFila(inputProd, "Seleccione producto");
-              esValido = false;
-            }
-
-            // Cantidad
-            if (esVacio(inputCant.value)) {
-              mostrarErrorFila(inputCant, "Requerido");
-              esValido = false;
-            } else if (!esNumeroPositivo(inputCant.value)) {
-              mostrarErrorFila(inputCant, "Mayor a 0");
-              esValido = false;
-            }
-
-            // Precio Unitario
-            if (esVacio(inputPrec.value)) {
-              mostrarErrorFila(inputPrec, "Requerido");
-              esValido = false;
-            } else if (!esNumeroPositivo(inputPrec.value)) {
-              mostrarErrorFila(inputPrec, "Mayor a 0");
-              esValido = false;
-            }
-          });
-        }
-
-        // Validar que el total sea mayor a 0 (por seguridad)
-        const montoTotal = parseFloat(
-          document.getElementById("monto_total_oc").value,
-        );
-        if (isNaN(montoTotal) || montoTotal <= 0) {
-          mostrarError(
-            "monto_total_oc",
-            "error_monto_total",
-            "El monto total no puede ser 0. Agregue productos y precios.",
-          );
-          esValido = false;
+          if (!montoTotal || parseFloat(montoTotal) <= 0) {
+            mostrarError(
+              "monto_total_oc",
+              "error_monto_total",
+              "El monto total debe ser mayor a 0.",
+            );
+            esValido = false;
+          }
         }
 
         return esValido;
       }
 
-      // Calcular al cargar por si hay datos precargados
-      window.onload = calcularTotales;
+      // 4. GUARDAR ORDEN (ENVIAR A BD)
+      async function guardarOrden() {
+        if (!validarOrdenCompra()) return;
+
+        const idCot = document.getElementById("id_cotizacion_search").value;
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+
+        // Armar JSON exacto para el Controller
+        const datos = {
+          id_cotizacion: idCot,
+          fecha_emision: document.getElementById("fecha_emision").value,
+          estado_OC: document.getElementById("estado_OC").value,
+          monto_total_OC: document.getElementById("monto_total_oc").value,
+          cantidad_items: document.getElementById("cantidad_items").value,
+          total_unidades: document.getElementById("total_unidades").value,
+          detalles: [],
+        };
+
+        filas.forEach((fila) => {
+          datos.detalles.push({
+            id_producto: fila.querySelector(".id-prod").value,
+            cantidad: fila.querySelector(".cant").value,
+            precio_unitario: fila.querySelector(".precio").value,
+          });
+        });
+
+        try {
+          const res = await fetch("/api/ordenes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+
+          const resultado = await res.json();
+
+          if (res.ok) {
+            alert(" " + resultado.mensaje);
+            document.getElementById("form-orden").reset();
+            document
+              .querySelectorAll(".error-msg")
+              .forEach((el) => (el.style.display = "none"));
+            document
+              .querySelectorAll(".input-error")
+              .forEach((el) => el.classList.remove("input-error"));
+            document.querySelector("#tabla-detalle tbody").innerHTML =
+              '<tr><td colspan="4" style="text-align:center; color: #777;">Use el botón "Cargar Datos" arriba...</td></tr>';
+            document.getElementById("fecha_emision").valueAsDate = new Date();
+          } else {
+            alert(" Error: " + resultado.mensaje);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error de conexión.");
+        }
+      }
+
+      function mostrarError(idInput, idError, mensaje) {
+        const div = document.getElementById(idError);
+        const input = document.getElementById(idInput);
+        if (div) {
+          div.innerText = mensaje;
+          div.style.display = "block";
+        }
+        if (input) input.classList.add("input-error");
+      }
     </script>
   </body>
 </html>

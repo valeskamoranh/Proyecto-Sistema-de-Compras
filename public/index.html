@@ -21,13 +21,22 @@
       .toggle-password:hover {
         color: #333;
       }
+
+      /* Estilo para mensaje de error global */
+      #mensaje-servidor {
+        color: #d63031;
+        text-align: center;
+        margin-top: 10px;
+        font-weight: bold;
+        display: none;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h2>Iniciar Sesión</h2>
 
-      <form onsubmit="return validarLogin();" novalidate>
+      <form id="form-login" novalidate>
         <div class="form-group">
           <label for="txt_usuario">Usuario </label>
           <input
@@ -56,6 +65,8 @@
           <div id="error_password" class="error-msg"></div>
         </div>
 
+        <div id="mensaje-servidor"></div>
+
         <button class="btn-guardar" type="submit">Ingresar</button>
       </form>
     </div>
@@ -63,14 +74,22 @@
     <script src="vistas/js/validaciones.js"></script>
 
     <script>
-      function validarLogin() {
-        limpiarErrores();
-        let esValido = true;
+      document
+        .getElementById("form-login")
+        .addEventListener("submit", function (e) {
+          e.preventDefault(); 
+          validarLogin(); 
+        });
 
+      async function validarLogin() {
+        limpiarErrores();
+        document.getElementById("mensaje-servidor").style.display = "none";
+
+        let esValido = true;
         const usuario = document.getElementById("txt_usuario").value.trim();
         const password = document.getElementById("txt_password").value.trim();
 
-        // 1. VALIDAR USUARIO (Cédula)
+        // 1. VALIDACIONES 
         if (esVacio(usuario)) {
           mostrarError(
             "txt_usuario",
@@ -78,7 +97,6 @@
             "El usuario es obligatorio.",
           );
           esValido = false;
-
         } else if (!esCedulaEcuatoriana(usuario)) {
           mostrarError(
             "txt_usuario",
@@ -88,7 +106,6 @@
           esValido = false;
         }
 
-        // 2. VALIDAR CONTRASEÑA
         if (esVacio(password)) {
           mostrarError(
             "txt_password",
@@ -96,7 +113,6 @@
             "La contraseña es obligatoria.",
           );
           esValido = false;
-          
         } else if (!cumpleLongitudMinima(password, 6)) {
           mostrarError(
             "txt_password",
@@ -106,17 +122,34 @@
           esValido = false;
         }
 
-        if (esValido) {
-          window.location.href = "./vistas/formularios/menu_principal.html";
-        }
+        if (!esValido) return;
 
-        return false;
+        // 2. CONEXIÓN CON BASE DE DATOS
+        try {
+          const respuesta = await fetch("/api/usuarios/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cedula: usuario }),
+          });
+
+          const data = await respuesta.json();
+
+          if (respuesta.ok) {
+            window.location.href = "./vistas/formularios/menu_principal.html";
+          } else {
+            const msgDiv = document.getElementById("mensaje-servidor");
+            msgDiv.innerText = data.mensaje || "Acceso denegado.";
+            msgDiv.style.display = "block";
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error de conexión con el servidor.");
+        }
       }
 
       function verPassword() {
         const input = document.getElementById("txt_password");
         const texto = document.querySelector(".toggle-password");
-
         if (input.type === "password") {
           input.type = "text";
           texto.textContent = "Ocultar";

@@ -34,12 +34,45 @@
       </svg>
       Regresar al Menú Principal
     </a>
-    <form class="container" onsubmit="return validarCotizacion();" novalidate>
+    <form id="form-cotizacion" class="container" novalidate>
       <h1>Registrar Cotización</h1>
 
-      <div class="form-group">
-        <label for="id_requisicion">Requisición </label>
-        <input type="text" id="id_requisicion" name="id_requisicion" required />
+      <div
+        class="form-group"
+        style="
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+        "
+      >
+        <label for="id_requisicion_search"> Buscar Requisición</label>
+        <div class="search-group">
+          <input
+            type="number"
+            id="id_requisicion_search"
+            name="id_requisicion"
+            required
+          />
+          <button
+            type="button"
+            class="btn-search"
+            onclick="buscarRequisicion()"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Cargar Datos
+          </button>
+        </div>
         <div id="error_requisicion" class="error-msg"></div>
       </div>
 
@@ -47,7 +80,6 @@
         <label for="id_proveedor">Proveedor</label>
         <select id="id_proveedor" name="id_proveedor" required>
           <option value="">Seleccione un proveedor</option>
-          <option value="1">Proveedor A - Suministros S.A.</option>
         </select>
         <div id="error_proveedor" class="error-msg"></div>
       </div>
@@ -84,12 +116,7 @@
         <tbody>
           <tr>
             <td>
-              <select name="id_producto[]" class="input-texto" required>
-                <option value="">Seleccione producto</option>
-                <option value="1">Computadora</option>
-                <option value="2">Silla</option>
-                <option value="3">Papel Higienico</option>
-              </select>
+              <input type="text" name="id_producto[]" class="input-texto" required>
               <div class="error-msg"></div>
             </td>
             <td>
@@ -123,10 +150,6 @@
         </tbody>
       </table>
 
-      <button type="button" class="btn-secondary" onclick="agregarFila()">
-        ➕ Agregar producto
-      </button>
-
       <br /><br />
 
       <div class="form-group">
@@ -141,7 +164,7 @@
         <div id="error_monto_total" class="error-msg"></div>
       </div>
 
-      <button type="submit" class="btn-guardar">
+      <button type="button" class="btn-guardar" onclick="guardarCotizacion()">
         <svg
           viewBox="0 0 24 24"
           width="20"
@@ -160,39 +183,72 @@
     <script src="../js/validaciones.js"></script>
 
     <script>
-      // --- FUNCIONES EXTRA ---
+      let productosCache = [];
 
-      function calcularTotal() {
-        let total = 0;
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+      // 1. AL CARGAR LA PÁGINA: Traer Proveedores y Productos
+      document.addEventListener("DOMContentLoaded", async () => {
+        await cargarProveedores();
+        await cargarProductos();
+      });
 
-        filas.forEach((fila) => {
-          const cant = fila.querySelector("[name='cantidad[]']").value;
-          const precio = fila.querySelector("[name='precio_unitario[]']").value;
+      async function cargarProveedores() {
+        try {
+          const res = await fetch("/api/proveedores");
+          const proveedores = await res.json();
+          const select = document.getElementById("id_proveedor");
 
-          // Solo sumamos si ambos son números válidos
-          if (cant && precio && !isNaN(cant) && !isNaN(precio)) {
-            total += parseFloat(cant) * parseFloat(precio);
-          }
-        });
+          select.innerHTML =
+            '<option value="">Seleccione un proveedor</option>';
 
-        document.getElementById("monto_total").value = total.toFixed(2);
+          proveedores.forEach((p) => {
+            select.innerHTML += `<option value="${p.id_proveedor}">${p.nombre}</option>`;
+          });
+        } catch (error) {
+          console.error("Error cargando proveedores:", error);
+        }
       }
+
+      async function cargarProductos() {
+        try {
+          const res = await fetch("/api/productos");
+          productosCache = await res.json();
+
+          const selectInicial = document.querySelector(
+            "select[name='id_producto[]']",
+          );
+          llenarSelectProductos(selectInicial);
+        } catch (error) {
+          console.error("Error cargando productos:", error);
+        }
+      }
+
+      function llenarSelectProductos(select) {
+        select.innerHTML = '<option value="">Seleccione producto</option>';
+        productosCache.forEach((prod) => {
+          select.innerHTML += `<option value="${prod.id_producto}">${prod.nombre_producto}</option>`;
+        });
+      }
+
+      // --- FUNCIONES DE TABLA ---
 
       function agregarFila() {
         const tbody = document.querySelector("#tabla-detalle tbody");
+
         const nuevaFila = tbody.rows[0].cloneNode(true);
 
-        // Limpiar valores y errores
-        nuevaFila
-          .querySelectorAll("input, select")
-          .forEach((input) => (input.value = ""));
+        // Limpiamos los inputs
+        nuevaFila.querySelectorAll("input").forEach((i) => (i.value = ""));
         nuevaFila
           .querySelectorAll(".error-msg")
           .forEach((div) => (div.style.display = "none"));
         nuevaFila
           .querySelectorAll(".input-error")
-          .forEach((input) => input.classList.remove("input-error"));
+          .forEach((i) => i.classList.remove("input-error"));
+
+        const selectProd = nuevaFila.querySelector(
+          "select[name='id_producto[]']",
+        );
+        llenarSelectProductos(selectProd);
 
         tbody.appendChild(nuevaFila);
       }
@@ -201,9 +257,168 @@
         const tbody = document.querySelector("#tabla-detalle tbody");
         if (tbody.rows.length > 1) {
           boton.closest("tr").remove();
-          calcularTotal(); 
+          calcularTotal();
         } else {
           alert("La cotización debe tener al menos un producto.");
+        }
+      }
+
+      async function buscarRequisicion() {
+        const idReq = document
+          .getElementById("id_requisicion_search")
+          .value.trim();
+        const tbody = document.querySelector("#tabla-detalle tbody");
+
+        if (!idReq) {
+          alert("Por favor escribe un número de requisición.");
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/requisiciones/${idReq}`);
+          if (!res.ok) throw new Error("No se encontró esa requisición.");
+
+          const datos = await res.json();
+          const tbody = document.querySelector("#tabla-detalle tbody");
+          tbody.innerHTML = "";
+
+          if (!datos.detalles || datos.detalles.length === 0) {
+            alert("La requisición no tiene productos.");
+            return;
+          }
+
+          // Generamos las filas BLOQUEADAS, solo el precio es editable
+          datos.detalles.forEach((item) => {
+            const fila = document.createElement("tr");
+
+            fila.innerHTML = `
+                    <td>
+                        <input type="hidden" name="id_producto[]" value="${item.id_producto}">
+                        
+                        <input type="text" class="input-texto" value="${item.nombre_producto}" 
+                               readonly style="background-color: #e9ecef; border: 1px solid #ced4da;">
+                    </td>
+                    <td>
+                        <input type="number" name="cantidad[]" class="input-numero" 
+                               value="${item.cantidad}" readonly 
+                               style="background-color: #e9ecef; text-align: center;">
+                    </td>
+                    <td>
+                        <input type="number" name="precio_unitario[]" class="input-numero" 
+                               step="0.01" min="0.01" placeholder="0.00" 
+                               oninput="calcularTotal()" required
+                               style="border: 2px solid #28a745;"> <div class="error-msg"></div>
+                    </td>
+                    <td>
+                        <input type="hidden" name="unidad_medida[]" value="${item.unidad_medida}">
+                        
+                        <button type="button" onclick="eliminarFila(this)" title="El proveedor no tiene este ítem">
+                            🗑
+                        </button>
+                    </td>
+                `;
+            tbody.appendChild(fila);
+          });
+
+          document.getElementById("error_tabla").style.display = "none";
+          alert("Requisicion cargada correctamente.");
+        } catch (error) {
+          console.error(error);
+          alert(" " + error.message);
+          tbody.innerHTML =
+            '<tr><td colspan="4" style="text-align:center; color:red">Intente con otro número.</td></tr>';
+        }
+      }
+
+      function calcularTotal() {
+        let total = 0;
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+
+        filas.forEach((fila) => {
+          const cant = parseFloat(
+            fila.querySelector("[name='cantidad[]']").value,
+          );
+          const precio = parseFloat(
+            fila.querySelector("[name='precio_unitario[]']").value,
+          );
+
+          if (!isNaN(cant) && !isNaN(precio)) {
+            total += cant * precio;
+          }
+        });
+
+        document.getElementById("monto_total").value = total.toFixed(2);
+      }
+
+      // --- GUARDAR EN BASE DE DATOS ---
+
+      async function guardarCotizacion() {
+        if (!validarCotizacion()) return;
+
+        // Armar el objeto JSON
+        const datos = {
+          id_requisicion: document
+            .getElementById("id_requisicion_search")
+            .value.trim(),
+          id_proveedor: document.getElementById("id_proveedor").value,
+          fecha_cotizacion: document.getElementById("fecha_cotizacion").value,
+          validez: document.getElementById("validez").value,
+          monto_total: document.getElementById("monto_total").value,
+          detalles: [],
+        };
+
+        // Armar los Detalles (Tabla)
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+        filas.forEach((fila) => {
+          const idProd = fila.querySelector("[name='id_producto[]']").value;
+          const cant = fila.querySelector("[name='cantidad[]']").value;
+          const precio = fila.querySelector("[name='precio_unitario[]']").value;
+
+          // Solo agregamos si la fila tiene datos completos
+          if (idProd && cant && precio) {
+            datos.detalles.push({
+              id_producto: idProd,
+              cantidad: cant,
+              precio_unitario: precio,
+            });
+          }
+        });
+
+        if (datos.detalles.length === 0) {
+          alert("No hay productos válidos en la cotización.");
+          return;
+        }
+
+        // Enviar al Servidor
+        try {
+          const respuesta = await fetch("/api/cotizaciones", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+
+          const resultado = await respuesta.json();
+
+          if (respuesta.ok) {
+            alert(" " + resultado.mensaje);
+
+            document.getElementById("form-cotizacion").reset();
+
+            document.querySelector("#tabla-detalle tbody").innerHTML =
+              '<tr><td colspan="4" style="text-align:center; color:#666;">Busque una nueva requisición...</td></tr>';
+
+            if (document.getElementById("monto_total_display")) {
+              document.getElementById("monto_total_display").innerText = "0.00";
+            }
+            document.getElementById("monto_total").value = "0.00";
+          } else {
+            alert(" ERROR DEL SERVIDOR: " + resultado.mensaje);
+          }
+        } catch (error) {
+          console.error("El error real es:", error);
+          alert(
+            "Ocurrió un error (ver consola). Puede que los datos sí se hayan guardado.",
+          );
         }
       }
 
@@ -224,7 +439,7 @@
 
         // 1. VALIDAR CABECERA
         const idRequisicion = document
-          .getElementById("id_requisicion")
+          .getElementById("id_requisicion_search")
           .value.trim();
         const idProveedor = document.getElementById("id_proveedor").value;
         const fecha = document.getElementById("fecha_cotizacion").value;
@@ -233,14 +448,14 @@
         // Requisición
         if (esVacio(idRequisicion)) {
           mostrarError(
-            "id_requisicion",
+            "id_requisicion_search",
             "error_requisicion",
             "El número de requisición es obligatorio.",
           );
           esValido = false;
         } else if (!esSoloNumeros(idRequisicion)) {
           mostrarError(
-            "id_requisicion",
+            "id_requisicion_search",
             "error_requisicion",
             "El ID debe ser numérico.",
           );
@@ -265,7 +480,6 @@
             "La fecha es obligatoria.",
           );
           esValido = false;
-
         } else if (!esFechaNoFutura(fecha)) {
           mostrarError(
             "fecha_cotizacion",
@@ -308,28 +522,18 @@
               "[name='precio_unitario[]']",
             );
 
-            // Producto
-            if (esVacio(inputProd.value)) {
-              mostrarErrorFila(inputProd, "Seleccione producto");
+            if (
+              esVacio(inputProd.value) ||
+              esVacio(inputCant.value) ||
+              !esNumeroPositivo(inputCant.value) ||
+              esVacio(inputPrecio.value) ||
+              !esNumeroPositivo(inputPrecio.value)
+            ) {
               esValido = false;
-            }
 
-            // Cantidad
-            if (esVacio(inputCant.value)) {
-              mostrarErrorFila(inputCant, "Requerido");
-              esValido = false;
-            } else if (!esNumeroPositivo(inputCant.value)) {
-              mostrarErrorFila(inputCant, "Mayor a 0");
-              esValido = false;
-            }
-
-            // Precio Unitario
-            if (esVacio(inputPrecio.value)) {
-              mostrarErrorFila(inputPrecio, "Requerido");
-              esValido = false;
-            } else if (!esNumeroPositivo(inputPrecio.value)) {
-              mostrarErrorFila(inputPrecio, "Mayor a 0.00");
-              esValido = false;
+              errorTabla.innerText =
+                "Verifique que todos los productos tengan cantidad y precio mayor a cero.";
+              errorTabla.style.display = "block";
             }
           });
         }
@@ -347,6 +551,9 @@
           esValido = false;
         }
 
+        const idReq = document.getElementById("id_requisicion_search").value;
+        const idProv = document.getElementById("id_proveedor").value;
+        if (!idReq || !idProv) esValido = false;
         return esValido;
       }
     </script>

@@ -16,6 +16,7 @@ class OrdenCompra {
         this.estado_OC = estado_OC;
         this.monto_total_OC = monto_total_OC;
         this.cantidad_items = cantidad_items;
+        this.total_unidades = total_unidades;
         this.detalles = [];
     }
 

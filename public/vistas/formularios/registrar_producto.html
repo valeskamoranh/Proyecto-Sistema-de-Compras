@@ -4,6 +4,64 @@
     <meta charset="UTF-8" />
     <title>Registrar Producto</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      .container-tabla {
+        margin-top: 30px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .btn-edit {
+        background-color: #0984e3;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-delete {
+        background-color: #d63031;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .grupo-botones {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        align-items: center;
+      }
+      .btn-secondary {
+        background-color: #636e72;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        height: 100%;
+      }
+
+      .editando {
+        border: 2px solid #0984e3 !important;
+        background-color: #f0f7ff;
+      }
+    </style>
   </head>
   <body>
     <a href="../formularios/menu_principal.html" class="btn-regresar">
@@ -21,8 +79,9 @@
       </svg>
       Regresar al Menú Principal
     </a>
-    <form class="container" onsubmit="return validarProducto();" novalidate>
-      <h1>Registrar Producto</h1>
+    <form id="form-producto" class="container" novalidate>
+      <h1 id="titulo-form">Registrar Producto</h1>
+      <input type="hidden" id="id_producto_edit" value="">
 
       <div class="form-group">
         <label for="nombre_producto">Nombre</label>
@@ -40,10 +99,25 @@
         <label for="unidad_medida">Unidad Medida</label>
         <select id="unidad_medida" name="unidad_medida">
           <option value="">Seleccione</option>
+          <option value="Unidad">Unidad</option>
           <option value="Caja">Caja</option>
           <option value="Paquete">Paquete</option>
-          <option value="Unidad">Unidad</option>
+
+          <option value="Kilogramo">Kilogramo (kg)</option>
+          <option value="Libra">Libra (lb)</option>
+          <option value="Gramo">Gramo (g)</option>
+          <option value="Saco">Saco / Bulto</option>
+
           <option value="Litro">Litro</option>
+          <option value="Galon">Galón</option>
+          <option value="Botella">Botella</option>
+          <option value="Frasco">Frasco</option>
+
+          <option value="Metro">Metro</option>
+          <option value="Rollo">Rollo</option>
+          <option value="Resma">Resma</option>
+          <option value="Juego">Juego / Set</option>
+          <option value="Docena">Docena</option>
         </select>
         <div id="error_unidad" class="error-msg"></div>
       </div>
@@ -59,27 +133,53 @@
         <div id="error_cantidad" class="error-msg"></div>
       </div>
 
-      <button type="submit" class="btn-guardar">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          style="vertical-align: middle; margin-right: 5px"
+      <div class="grupo-botones">
+        <button type="button" class="btn-guardar" onclick="guardarProducto()">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            style="vertical-align: middle; margin-right: 5px"
+          >
+            <path
+              fill="currentColor"
+              d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+            />
+          </svg>
+          <span id="texto-boton">Guardar Producto</span>
+        </button>
+        <button
+          type="button"
+          id="btn-cancelar"
+          class="btn-secondary"
+          onclick="resetForm()"
         >
-          <path
-            fill="currentColor"
-            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-          />
-        </svg>
-        Guardar Producto
-      </button>
+          Cancelar
+        </button>
+      </div>
     </form>
-
+    <div class="container container-tabla">
+      <h1>Inventario de Productos</h1>
+      <table id="tabla-productos">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Unidad</th>
+            <th>Cant.</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="lista-productos"></tbody>
+      </table>
+    </div>
     <script src="../js/validaciones.js"></script>
 
     <script>
+      document.addEventListener("DOMContentLoaded", cargarProductos);
       function validarProducto() {
-        limpiarErrores();
+        if (typeof limpiarErrores === "function") limpiarErrores();
         let esValido = true;
 
         const nombre = document.getElementById("nombre_producto").value.trim();
@@ -134,6 +234,128 @@
         }
 
         return esValido;
+      }
+
+      // 1. CARGAR PRODUCTOS (READ)
+      async function cargarProductos() {
+        try {
+          const res = await fetch("/api/productos");
+          const productos = await res.json();
+          const tbody = document.getElementById("lista-productos");
+          tbody.innerHTML = "";
+
+          if (productos.length === 0) {
+            tbody.innerHTML =
+              "<tr><td colspan='6' style='text-align:center'>No hay productos registrados</td></tr>";
+            return;
+          }
+
+          productos.forEach((p) => {
+            const id = p.id_producto || p.ID_PRODUCTO;
+            const nom = p.nombre_producto || p.NOMBRE_PRODUCTO;
+            const desc = p.descripcion || p.DESCRIPCION || "";
+            const unid = p.unidad_medida || p.UNIDAD_MEDIDA;
+            const cant = p.cantidad_unidad || p.CANTIDAD_UNIDAD;
+
+            tbody.innerHTML += `
+                        <tr>
+                            <td>${id}</td>
+                            <td>${nom}</td>
+                            <td>${desc}</td>
+                            <td>${unid}</td>
+                            <td>${cant}</td>
+                            <td style="text-align: center;">
+                                <button class="btn-edit" onclick="prepararEdicion(${id}, '${nom}', '${desc}', '${unid}', '${cant}')">✏️</button>
+                                <button class="btn-delete" onclick="eliminarProducto(${id})">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      // 2. GUARDAR (CREATE / UPDATE)
+      async function guardarProducto() {
+        if (!validarProducto()) return;
+
+        const id = document.getElementById("id_producto_edit").value;
+
+        const datos = {
+          nombre_producto: document
+            .getElementById("nombre_producto")
+            .value.trim(),
+          descripcion: document.getElementById("descripcion").value.trim(),
+          unidad_medida: document.getElementById("unidad_medida").value,
+          cantidad_unidad: document.getElementById("cantidad_unidad").value,
+        };
+
+        const metodo = id ? "PUT" : "POST";
+        const url = id ? `/api/productos/${id}` : "/api/productos";
+
+        try {
+          const res = await fetch(url, {
+            method: metodo,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+
+          if (res.ok) {
+            const resultado = await res.json();
+            alert("" + resultado.mensaje);
+            resetForm();
+            cargarProductos();
+          } else {
+            alert("Error al guardar");
+          }
+        } catch (error) {
+          alert("Error de conexión");
+        }
+      }
+
+      // 3. EDITAR
+      function prepararEdicion(id, nombre, descripcion, unidad, cantidad) {
+        document.getElementById("id_producto_edit").value = id;
+        document.getElementById("nombre_producto").value = nombre;
+        document.getElementById("descripcion").value = descripcion;
+        document.getElementById("unidad_medida").value = unidad;
+        document.getElementById("cantidad_unidad").value = cantidad;
+
+        document.getElementById("titulo-form").innerText =
+          "Editando Producto #" + id;
+        document.getElementById("texto-boton").innerText =
+          "Actualizar Producto";
+        document.getElementById("btn-cancelar").style.display = "flex";
+        document.getElementById("form-producto").classList.add("editando");
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // 4. ELIMINAR
+      async function eliminarProducto(id) {
+        if (!confirm("¿Estás seguro de eliminar este producto?")) return;
+        try {
+          const res = await fetch(`/api/productos/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            alert("Producto eliminado");
+            cargarProductos();
+          } else {
+            alert("No se pudo eliminar (puede estar en uso)");
+          }
+        } catch (error) {
+          alert("Error de conexión");
+        }
+      }
+
+      function resetForm() {
+        document.getElementById("form-producto").reset();
+        document.getElementById("id_producto_edit").value = "";
+        document.getElementById("titulo-form").innerText = "Registrar Producto";
+        document.getElementById("texto-boton").innerText = "Guardar Producto";
+        document.getElementById("btn-cancelar").style.display = "none";
+        document.getElementById("form-producto").classList.remove("editando");
+        if (typeof limpiarErrores === "function") limpiarErrores();
       }
     </script>
   </body>

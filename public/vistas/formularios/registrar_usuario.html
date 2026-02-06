@@ -2,8 +2,72 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Registrar Usuario</title>
+    <title>Gestión de Usuarios</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      .container-tabla {
+        margin-bottom: 30px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: white;
+      }
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .acciones {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+      }
+      .btn-edit {
+        background-color: #0984e3;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-delete {
+        background-color: #d63031;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .editando {
+        border: 2px solid #0984e3 !important;
+        background-color: #f0f7ff;
+      }
+
+      .grupo-botones {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-top: 15px;
+      }
+      .btn-secondary {
+        background-color: #636e72;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        height: 100%;
+      }
+    </style>
   </head>
   <body>
     <a href="../formularios/menu_principal.html" class="btn-regresar">
@@ -21,9 +85,9 @@
       </svg>
       Regresar al Menú Principal
     </a>
-    <form class="container" onsubmit="return validarUsuario();">
-      <h1>Registrar Usuario</h1>
-
+    <form id="form-usuario" class="container">
+      <h1 id="titulo-form">Registrar Usuario</h1>
+      <input type="hidden" id="id_usuario_edit" value="" />
       <div class="form-group">
         <label for="id_usuario">Cédula / ID Usuario</label>
         <input
@@ -48,7 +112,9 @@
           <option value="">Seleccione</option>
           <option value="Empleado">Empleado</option>
           <option value="Jefe de Área">Jefe de Área</option>
-          <option value="Compras">Compras</option>
+          <option value="Jefe de Compras">Jefe de Compras</option>
+          <option value="Asistente de Compras">Asistente de Compras</option>
+          <option value="Jefe de Bodega">Jefe de Bodega / Almacén</option>
           <option value="Administrador">Administrador</option>
         </select>
         <div id="error_cargo" class="error-msg"></div>
@@ -66,25 +132,54 @@
         <div id="error_area" class="error-msg"></div>
       </div>
 
-      <button type="submit" class="btn-guardar">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          style="vertical-align: middle; margin-right: 5px"
+      <div class="grupo-botones">
+        <button type="button" class="btn-guardar" onclick="guardarUsuario()">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            style="vertical-align: middle; margin-right: 5px"
+          >
+            <path
+              fill="currentColor"
+              d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+            />
+          </svg>
+          <span id="texto-boton">Guardar Usuario</span>
+        </button>
+        <button
+          type="button"
+          id="btn-cancelar"
+          class="btn-secondary"
+          onclick="resetForm()"
+          style="display: none"
         >
-          <path
-            fill="currentColor"
-            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-          />
-        </svg>
-        Guardar Usuario
-      </button>
+          Cancelar
+        </button>
+      </div>
     </form>
 
+    <div class="container container-tabla">
+      <h1>Usuarios Registrados</h1>
+      <table id="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Email</th>
+            <th>Área</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="lista-usuarios"></tbody>
+      </table>
+    </div>
     <script src="../js/validaciones.js"></script>
 
     <script>
+      document.addEventListener("DOMContentLoaded", cargarUsuarios);
+
       function validarUsuario() {
         limpiarErrores();
         let esValido = true;
@@ -165,6 +260,122 @@
         }
 
         return esValido;
+      }
+
+      async function cargarUsuarios() {
+        try {
+          const res = await fetch("/api/usuarios");
+          const usuarios = await res.json();
+          const tbody = document.getElementById("lista-usuarios");
+          tbody.innerHTML = "";
+
+          if (usuarios.length === 0) {
+            tbody.innerHTML =
+              "<tr><td colspan='6' style='text-align:center;'>No hay usuarios registrados</td></tr>";
+            return;
+          }
+
+          usuarios.forEach((u) => {
+            const id = u.id_usuario || u.ID_USUARIO || u.cedula || "N/A";
+            const nom = u.nombre || u.NOMBRE || "N/A";
+            const carg = u.cargo || u.CARGO || "N/A";
+            const email = u.email || u.EMAIL || "";
+            const area =
+              u.nombre_area || u.NOMBRE_AREA || u.id_area || u.ID_AREA || "N/A";
+
+            tbody.innerHTML += `
+          <tr>
+            <td>${id}</td>
+            <td>${nom}</td>
+            <td>${carg}</td>
+            <td>${email}</td>
+            <td>${area}</td>
+            <td class="acciones">
+               <button class="btn-edit" onclick="prepararEdicion('${id}', '${nom}', '${carg}', '${email}', '${u.id_area || u.ID_AREA}')">✏️</button>
+               <button class="btn-delete" onclick="eliminarUsuario('${id}')">🗑️</button>
+            </td>
+          </tr>
+        `;
+          });
+        } catch (error) {
+          alert("Error grave: " + error.message);
+        }
+      }
+
+      function prepararEdicion(id, nombre, cargo, email, idArea) {
+        document.getElementById("id_usuario_edit").value = id;
+        document.getElementById("id_usuario").value = id;
+        document.getElementById("nombre").value = nombre;
+        document.getElementById("cargo").value = cargo;
+        document.getElementById("email").value = email;
+        document.getElementById("id_area").value = idArea;
+
+        document.getElementById("titulo-form").innerText = "Editando: " + id;
+        document.getElementById("texto-boton").innerText = "Actualizar";
+        document.getElementById("btn-cancelar").style.display = "flex";
+      }
+
+      async function guardarUsuario() {
+        if (!validarUsuario()) return;
+
+        const idOriginal = document.getElementById("id_usuario_edit").value;
+
+        const datos = {
+          id_usuario: document.getElementById("id_usuario").value.trim(),
+          nombre: document.getElementById("nombre").value.trim(),
+          cargo: document.getElementById("cargo").value,
+          email: document.getElementById("email").value.trim(),
+          id_area: document.getElementById("id_area").value.trim(),
+        };
+
+        const metodo = idOriginal ? "PUT" : "POST";
+        const url = idOriginal
+          ? `/api/usuarios/${idOriginal}`
+          : "/api/usuarios";
+
+        try {
+          const respuesta = await fetch(url, {
+            method: metodo,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+
+          if (respuesta.ok) {
+            const resultado = await respuesta.json();
+            alert("" + resultado.mensaje);
+            resetForm();
+            cargarUsuarios();
+          } else {
+            const err = await respuesta.json();
+            alert("Error: " + err.mensaje);
+          }
+        } catch (error) {
+          alert("Error de conexión");
+        }
+      }
+
+      function resetForm() {
+        document.getElementById("form-usuario").reset();
+        document.getElementById("id_usuario_edit").value = "";
+        document.getElementById("titulo-form").innerText = "Registrar Usuario";
+        document.getElementById("texto-boton").innerText = "Guardar Usuario";
+        document.getElementById("btn-cancelar").style.display = "none";
+        document.getElementById("id_usuario").readOnly = false;
+        document.getElementById("id_usuario").style.backgroundColor = "white";
+        limpiarErrores();
+      }
+
+      async function eliminarUsuario(id) {
+        if (!confirm("¿Eliminar usuario " + id + "?")) return;
+        try {
+          const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            alert("Usuario eliminado");
+            cargarUsuarios();
+          }
+        } catch (e) {
+          alert("Error de conexión");
+        }
       }
     </script>
   </body>

@@ -30,12 +30,36 @@
       </svg>
       Regresar al Menú Principal
     </a>
-    <form class="container" onsubmit="return validarRecepcion();" novalidate>
+    <form id="form-recepcion" class="container">
       <h1>Registrar Recepción</h1>
 
-      <div class="form-group">
-        <label for="id_oc">Orden de compra </label>
-        <input type="number" id="id_oc" name="id_oc" required />
+      <div
+        class="form-group"
+        style="
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+        "
+      >
+        <label> Buscar Orden de Compra</label>
+        <div class="search-group">
+          <input type="number" id="id_oc_search" name=" id_OC" required />
+          <button type="button" class="btn-search" onclick="buscarOrden()">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Cargar Orden
+          </button>
+        </div>
         <div id="error_oc" class="error-msg"></div>
       </div>
 
@@ -67,7 +91,7 @@
         <div id="error_estado" class="error-msg"></div>
       </div>
 
-      <h2>Detalle de Recepción</h2>
+      <h2>Verificación de Productos</h2>
       <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
 
       <table id="tabla-detalle">
@@ -81,11 +105,7 @@
         <tbody>
           <tr>
             <td>
-              <select name="id_producto[]" class="input-texto" required>
-                <option value="">Seleccione producto</option>
-                <option value="1">Laptop HP</option>
-                <option value="2">Mouse</option>
-              </select>
+              <input type="text" name="id_producto[]" class="input-texto" required>
               <div class="error-msg"></div>
             </td>
             <td>
@@ -105,12 +125,7 @@
         </tbody>
       </table>
 
-      <button type="button" class="btn-secondary" onclick="agregarFila()">
-        ➕ Agregar producto
-      </button>
-      <br /><br />
-
-      <button type="submit" class="btn-guardar">
+      <button type="button" class="btn-guardar" onclick="guardarRecepcion()">
         <svg
           viewBox="0 0 24 24"
           width="20"
@@ -129,34 +144,219 @@
     <script src="../js/validaciones.js"></script>
 
     <script>
-      // --- FUNCIONES DE TABLA ---
-      function agregarFila() {
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("fecha_recepcion").valueAsDate = new Date();
+      });
+
+      // 1. BUSCAR ORDEN (AUTOMÁTICO)
+      async function buscarOrden() {
+        const idOC = document.getElementById("id_oc_search").value.trim();
         const tbody = document.querySelector("#tabla-detalle tbody");
-        const nuevaFila = tbody.rows[0].cloneNode(true);
 
-        nuevaFila
-          .querySelectorAll("input, select")
-          .forEach((input) => (input.value = ""));
-        nuevaFila
-          .querySelectorAll(".error-msg")
-          .forEach((div) => (div.style.display = "none"));
-        nuevaFila
-          .querySelectorAll(".input-error")
-          .forEach((input) => input.classList.remove("input-error"));
+        // Limpiamos errores al buscar de nuevo
+        if (typeof limpiarErrores === "function") limpiarErrores();
+        limpiarErroresVisuales();
 
-        tbody.appendChild(nuevaFila);
-      }
+        if (!idOC) {
+          alert("Ingrese número de Orden.");
+          return;
+        }
 
-      function eliminarFila(boton) {
-        const tbody = document.querySelector("#tabla-detalle tbody");
-        if (tbody.rows.length > 1) {
-          boton.closest("tr").remove();
-        } else {
-          alert("Debe registrar al menos un producto recibido.");
+        try {
+          const res = await fetch(`/api/ordenes/${idOC}`);
+          if (!res.ok) throw new Error("Orden no encontrada.");
+
+          const data = await res.json();
+          tbody.innerHTML = "";
+
+          if (!data.detalles || data.detalles.length === 0) {
+            alert("Esta orden no tiene productos.");
+            return;
+          }
+
+          data.detalles.forEach((d) => {
+            const fila = `
+                         <tr>
+                            <td>
+                                <input type="hidden" class="id-prod" value="${d.id_producto}">
+                                <input type="text" class="input-tabla readonly" value="${d.nombre_producto}" readonly title="Unidad: ${d.unidad_medida}">
+                            </td>
+                            <td>
+                                <input type="number" class="cant-recibida input-tabla input-editable" value="${d.cantidad}" min="0" placeholder="0">
+                                <div class="error-msg"></div>
+                            </td>
+                            <td>
+                                <button type="button" class="btn-delete" onclick="eliminarFila(this)" title="Quitar de la recepción">
+                                    🗑
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+            tbody.innerHTML += fila;
+          });
+          document.getElementById("error_tabla").style.display = "none";
+          alert(" Orden cargada. Verifique las cantidades.");
+        } catch (error) {
+          console.error(error);
+          alert(" " + error.message);
+          tbody.innerHTML =
+            '<tr><td colspan="3" style="text-align:center; color:red">Intente con otro número.</td></tr>';
         }
       }
 
-      // --- VALIDACIONES ---
+      function eliminarFila(btn) {
+        if (confirm("¿Desea quitar este producto de la recepción actual?")) {
+          const fila = btn.closest("tr");
+          fila.remove();
+
+          const tbody = document.querySelector("#tabla-detalle tbody");
+          if (tbody.rows.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="3" style="text-align:center; color: #777">Tabla vacía. Cargue una orden nuevamente.</td></tr>';
+          }
+        }
+      }
+
+      function validarRecepcion() {
+        // Limpieza inicial
+        if (typeof limpiarErrores === "function") limpiarErrores();
+        if (typeof limpiarErroresVisuales === "function")
+          limpiarErroresVisuales();
+
+        let esValido = true;
+
+        // A. VALIDAR CABECERA
+        const inputOc = document.getElementById("id_oc_search");
+        const fecha = document.getElementById("fecha_recepcion").value;
+        const estado = document.getElementById("estado_recepcion").value;
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+
+        // 1. Validar ID
+        if (!inputOc || !inputOc.value.trim()) {
+          mostrarError(
+            "id_oc_search",
+            "error_oc",
+            "El número de Orden es obligatorio.",
+          );
+          esValido = false;
+        }
+
+        // 2. Validar Fecha
+        if (esVacio(fecha)) {
+          mostrarError(
+            "fecha_recepcion",
+            "error_fecha",
+            "La fecha es obligatoria.",
+          );
+          esValido = false;
+        } else if (!esFechaNoFutura(fecha)) {
+          mostrarError(
+            "fecha_recepcion",
+            "error_fecha",
+            "La fecha del documento no puede ser futura.",
+          );
+          esValido = false;
+        }
+
+        // 3. Validar Estado
+        if (!estado) {
+          mostrarError(
+            "estado_recepcion",
+            "error_estado",
+            "Seleccione el estado.",
+          );
+          esValido = false;
+        }
+
+        // B. VALIDAR TABLA
+        const primeraFilaTexto = filas[0] ? filas[0].innerText : "";
+
+        // Verificamos si la tabla está vacía o tiene el mensaje de placeholder
+        if (
+          filas.length === 0 ||
+          primeraFilaTexto.includes("Cargar") ||
+          primeraFilaTexto.includes("Use el botón") ||
+          primeraFilaTexto.includes("Intente")
+        ) {
+          const errorTabla = document.getElementById("error_tabla");
+          if (errorTabla) {
+            errorTabla.innerText =
+              " La tabla no puede estar vacía. Cargue una Orden.";
+            errorTabla.style.display = "block";
+          }
+          esValido = false;
+        } else {
+          filas.forEach((fila) => {
+            const inputCant = fila.querySelector(".cant-recibida");
+
+            if (inputCant) {
+              const val = inputCant.value;
+              if (val === "" || val < 0) {
+                mostrarErrorFila(inputCant, "Cantidad inválida");
+                esValido = false;
+              }
+            }
+          });
+        }
+
+        return esValido;
+      }
+
+      // 3. GUARDAR
+      async function guardarRecepcion() {
+        if (!validarRecepcion()) return;
+
+        const idOC = document.getElementById("id_oc_search").value;
+        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+
+        const datos = {
+          id_OC: idOC,
+          fecha_recepcion: document.getElementById("fecha_recepcion").value,
+          estado_recepcion: document.getElementById("estado_recepcion").value,
+          observaciones: document.getElementById("observaciones").value,
+          detalles: [],
+        };
+
+        filas.forEach((fila) => {
+          datos.detalles.push({
+            id_producto: fila.querySelector(".id-prod").value,
+            cantidad_recibida: fila.querySelector(".cant-recibida").value,
+          });
+        });
+
+        try {
+          const res = await fetch("/api/recepciones", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+
+          const resultado = await res.json();
+          if (res.ok) {
+            alert(" " + resultado.mensaje);
+            document.getElementById("form-recepcion").reset();
+            document.querySelector("#tabla-detalle tbody").innerHTML =
+              '<tr><td colspan="4" style="text-align:center">Cargue una Orden de Compra...</td></tr>';
+            document.getElementById("fecha_recepcion").valueAsDate = new Date();
+            limpiarErroresVisuales();
+          } else {
+            alert(" Error: " + resultado.mensaje);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error de conexión.");
+        }
+      }
+
+      function mostrarError(idInput, idError, mensaje) {
+        const div = document.getElementById(idError);
+        const input = document.getElementById(idInput);
+        if (div) {
+          div.innerText = mensaje;
+          div.style.display = "block";
+        }
+        if (input) input.classList.add("input-error");
+      }
 
       function mostrarErrorFila(input, mensaje) {
         input.classList.add("input-error");
@@ -167,86 +367,13 @@
         }
       }
 
-      function validarRecepcion() {
-        limpiarErrores();
-        let esValido = true;
-
-        // 1. VALIDAR CABECERA
-        const idOc = document.getElementById("id_oc").value.trim();
-        const fecha = document.getElementById("fecha_recepcion").value;
-        const estado = document.getElementById("estado_recepcion").value;
-        if (esVacio(idOc)) {
-          mostrarError(
-            "id_oc",
-            "error_oc",
-            "El número de Orden de Compra es obligatorio.",
-          );
-          esValido = false;
-        } else if (!esSoloNumeros(idOc)) {
-          mostrarError("id_oc", "error_oc", "Debe ser un valor numérico.");
-          esValido = false;
-        }
-
-        // --- VALIDAR FECHA DE RECEPCIÓN ---
-        if (esVacio(fecha)) {
-          mostrarError(
-            "fecha_recepcion",
-            "error_fecha",
-            "La fecha de recepción es obligatoria.",
-          );
-          esValido = false;
-
-        } else if (!esFechaNoFutura(fecha)) {
-          mostrarError(
-            "fecha_recepcion",
-            "error_fecha",
-            "No puedes registrar recepciones futuras.",
-          );
-          esValido = false;
-        }
-
-        if (esVacio(estado)) {
-          mostrarError(
-            "estado_recepcion",
-            "error_estado",
-            "Debe seleccionar el estado de la recepción.",
-          );
-          esValido = false;
-        }
-
-        // 2. VALIDAR TABLA 
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
-        const errorTabla = document.getElementById("error_tabla");
-
-        if (filas.length === 0) {
-          errorTabla.innerText = "Debe agregar productos recibidos.";
-          errorTabla.style.display = "block";
-          esValido = false;
-        } else {
-          filas.forEach((fila) => {
-            const inputProd = fila.querySelector("[name='id_producto[]']");
-            const inputCant = fila.querySelector(
-              "[name='cantidad_recibida[]']",
-            );
-
-            // Validar Producto
-            if (esVacio(inputProd.value)) {
-              mostrarErrorFila(inputProd, "Seleccione producto");
-              esValido = false;
-            }
-
-            // Validar Cantidad Recibida
-            if (esVacio(inputCant.value)) {
-              mostrarErrorFila(inputCant, "Requerido");
-              esValido = false;
-            } else if (!esNumeroPositivo(inputCant.value)) {
-              mostrarErrorFila(inputCant, "Mayor a 0");
-              esValido = false;
-            }
-          });
-        }
-
-        return esValido;
+      function limpiarErroresVisuales() {
+        document
+          .querySelectorAll(".error-msg")
+          .forEach((d) => (d.style.display = "none"));
+        document
+          .querySelectorAll(".input-error")
+          .forEach((i) => i.classList.remove("input-error"));
       }
     </script>
   </body>

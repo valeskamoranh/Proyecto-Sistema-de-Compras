@@ -2,8 +2,53 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Registrar Área</title>
+    <title>Gestión de Área</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      .container-tabla {
+        margin-bottom: 30px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: white;
+      }
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .acciones {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+      }
+      .btn-edit {
+        background-color: #0984e3;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-delete {
+        background-color: #d63031;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .editando {
+        border: 2px solid #0984e3 !important;
+        background-color: #f0f7ff;
+      }
+    </style>
   </head>
 
   <body>
@@ -23,8 +68,9 @@
       Regresar al Menú Principal
     </a>
 
-    <form class="container" onsubmit="return validarArea();">
-      <h1>Registrar Área</h1>
+    <form id="form-area" class="container">
+      <h1 id="titulo-form">Registrar Área</h1>
+      <input type="hidden" id="id_area_edit" value="" />
       <div class="form-group">
         <label for="nombre_area">Nombre del área</label>
         <input type="text" id="nombre_area" name="nombre_area" />
@@ -36,25 +82,138 @@
         <input type="text" id="responsable" name="responsable" />
         <div id="error_responsable" class="error-msg"></div>
       </div>
-      <button type="submit" class="btn-guardar">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          style="vertical-align: middle; margin-right: 5px"
+
+      <div class="grupo-botones">
+        <button type="button" class="btn-guardar" onclick="guardarArea()">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            style="vertical-align: middle; margin-right: 5px"
+          >
+            <path
+              fill="currentColor"
+              d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+            />
+          </svg>
+          <span id="texto-boton">Guardar</span>
+        </button>
+        <button
+          type="button"
+          id="btn-cancelar"
+          class="btn-secondary"
+          onclick="resetForm()"
+          style="display: none"
         >
-          <path
-            fill="currentColor"
-            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-          />
-        </svg>
-        Guardar
-      </button>
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            style="vertical-align: middle; margin-right: 5px"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+          Cancelar
+        </button>
+      </div>
     </form>
+
+    <div class="container container-tabla">
+      <h1>Áreas Registradas</h1>
+      <table id="tabla-areas">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre del Área</th>
+            <th>Responsable</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="lista-areas"></tbody>
+      </table>
+    </div>
+
     <script src="../js/validaciones.js"></script>
     <script>
+      document.addEventListener("DOMContentLoaded", cargarAreas);
+      // --- READ: Listar Áreas ---
+      async function cargarAreas() {
+        try {
+          const res = await fetch("/api/areas");
+          const areas = await res.json();
+          const tbody = document.getElementById("lista-areas");
+          tbody.innerHTML = "";
+
+          areas.forEach((a) => {
+            tbody.innerHTML += `
+                        <tr>
+                            <td>${a.id_area}</td>
+                            <td>${a.nombre_area}</td>
+                            <td>${a.responsable || "No asignado"}</td>
+                            <td class="acciones">
+                                <button class="btn-edit" onclick="prepararEdicion(${a.id_area}, '${a.nombre_area}', '${a.responsable || ""}')">✏️</button>
+                                <button class="btn-delete" onclick="eliminarArea(${a.id_area})">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+        } catch (error) {
+          console.error("Error al cargar:", error);
+        }
+      }
+
+      // --- UPDATE: Preparar el formulario para editar ---
+      function prepararEdicion(id, nombre, responsable) {
+        document.getElementById("id_area_edit").value = id;
+        document.getElementById("nombre_area").value = nombre;
+        document.getElementById("responsable").value = responsable;
+
+        document.getElementById("titulo-form").innerText =
+          "Editando Área #" + id;
+        document.getElementById("texto-boton").innerText = "Actualizar Cambios";
+        document.getElementById("btn-cancelar").style.display = "block";
+        document.getElementById("form-area").classList.add("editando");
+
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+
+      // --- DELETE: Eliminar área ---
+      async function eliminarArea(id) {
+        if (!confirm(`¿Estás seguro de eliminar el área #${id}?`)) return;
+        try {
+          const res = await fetch(`/api/areas/${id}`, { method: "DELETE" });
+          const result = await res.json();
+          alert(result.mensaje);
+          cargarAreas();
+        } catch (error) {
+          alert("No se pudo eliminar el área.");
+        }
+      }
+
+      function resetForm() {
+        const formulario = document.getElementById("form-area");
+        formulario.reset();
+        document.getElementById("id_area_edit").value = "";
+        document.getElementById("titulo-form").innerText =
+          "Registrar Nueva Área";
+        document.getElementById("texto-boton").innerText = "Guardar";
+        document.getElementById("btn-cancelar").style.display = "none";
+        formulario.classList.remove("editando");
+        if (typeof limpiarErrores === "function") limpiarErrores();
+      }
+
       function validarArea() {
-        limpiarErrores();
+        if (typeof limpiarErrores === "function") limpiarErrores();
 
         let esValido = true;
 
@@ -105,6 +264,56 @@
         }
 
         return esValido;
+      }
+
+      // --- CREATE / UPDATE: Guardar datos ---
+      async function guardarArea() {
+        if (!validarArea()) {
+          return;
+        }
+
+        const id = document.getElementById("id_area_edit").value;
+        const datosAEnviar = {
+          nombre_area: document.getElementById("nombre_area").value.trim(),
+          responsable: document.getElementById("responsable").value.trim(),
+        };
+
+        const metodo = id ? "PUT" : "POST";
+        const url = id ? `/api/areas/${id}` : "/api/areas";
+        try {
+          const respuesta = await fetch(url, {
+            method: metodo,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datosAEnviar),
+          });
+
+          if (respuesta.ok) {
+            let mensajeExito = "Operación realizada correctamente";
+            try {
+              const resultado = await respuesta.json();
+              mensajeExito = resultado.mensaje;
+            } catch (e) {
+              console.log(
+                "El servidor no envió un JSON, pero la DB se actualizó.",
+              );
+            }
+
+            alert("" + mensajeExito);
+            resetForm();
+            cargarAreas();
+          } else {
+            const errorData = await respuesta
+              .json()
+              .catch(() => ({ mensaje: "Error desconocido en el servidor" }));
+            alert("ERROR: " + errorData.mensaje);
+          }
+        } catch (error) {
+          console.error("Error técnico:", error);
+          alert(
+            "Los cambios se enviaron, pero hubo un problema al confirmar. Por favor, revisa la tabla.",
+          );
+          cargarAreas();
+        }
       }
     </script>
   </body>

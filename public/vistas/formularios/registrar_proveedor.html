@@ -2,8 +2,58 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Registrar Proveedor</title>
+    <title>Gestión de Proveedores</title>
     <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      .container-tabla {
+        margin-top: 30px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .grupo-botones {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        align-items: center;
+      }
+      .btn-edit {
+        background: #0984e3;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-delete {
+        background: #d63031;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-secondary {
+        background-color: #636e72;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <a href="../formularios/menu_principal.html" class="btn-regresar">
@@ -21,8 +71,10 @@
       </svg>
       Regresar al Menú Principal
     </a>
-    <form class="container" onsubmit="return validarProveedor();" novalidate>
-      <h1>Registrar Proveedor</h1>
+    <form id="form-proveedor" class="container" novalidate>
+      <h1 id="titulo-form">Registrar Proveedor</h1>
+
+      <input type="hidden" id="id_proveedor_edit" value="" />
 
       <div class="form-group">
         <label for="nombre">Nombre comercial o Razón social</label>
@@ -48,25 +100,97 @@
         <div id="error_telefono" class="error-msg"></div>
       </div>
 
-      <button type="submit" class="btn-guardar">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          style="vertical-align: middle; margin-right: 5px"
+      <div class="grupo-botones">
+        <button type="button" class="btn-guardar" onclick="guardarProveedor()">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            style="vertical-align: middle; margin-right: 5px"
+          >
+            <path
+              fill="currentColor"
+              d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
+            />
+          </svg>
+          <span id="texto-boton">Guardar Proveedor</span>
+        </button>
+        <button
+          type="button"
+          id="btn-cancelar"
+          class="btn-secondary"
+          onclick="resetForm()"
         >
-          <path
-            fill="currentColor"
-            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-          />
-        </svg>
-        Guardar Proveedor
-      </button>
+          Cancelar
+        </button>
+      </div>
     </form>
+
+    <div class="container container-tabla">
+      <h1>Listado de Proveedores</h1>
+      <table id="tabla-proveedores">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Empresa</th>
+            <th>RUC</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="lista-proveedores"></tbody>
+      </table>
+    </div>
 
     <script src="../js/validaciones.js"></script>
 
     <script>
+      document.addEventListener("DOMContentLoaded", cargarProveedores);
+
+      //  FUNCIÓN CARGAR 
+      async function cargarProveedores() {
+        try {
+          const res = await fetch("/api/proveedores");
+
+          if (!res.ok) throw new Error("Error al conectar con servidor");
+
+          const proveedores = await res.json();
+          const tbody = document.getElementById("lista-proveedores");
+          tbody.innerHTML = "";
+
+          if (proveedores.length === 0) {
+            tbody.innerHTML =
+              "<tr><td colspan='6' style='text-align:center'>No hay proveedores registrados</td></tr>";
+            return;
+          }
+
+          proveedores.forEach((p) => {
+            const id = p.id_proveedor || p.ID_PROVEEDOR;
+            const nom = p.nombre || p.NOMBRE;
+            const ruc = p.ruc || p.RUC;
+            const tel = p.telefono || p.TELEFONO || "";
+            const email = p.email || p.EMAIL || "";
+
+            tbody.innerHTML += `
+                        <tr>
+                            <td>${id}</td>
+                            <td>${nom}</td>
+                            <td>${ruc}</td>
+                            <td>${tel}</td>
+                            <td>${email}</td>
+                            <td style="text-align:center">
+                                <button class="btn-edit" onclick="prepararEdicion('${id}', '${nom}', '${ruc}', '${tel}', '${email}')">✏️</button>
+                                <button class="btn-delete" onclick="eliminarProveedor('${id}')">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
       function validarProveedor() {
         limpiarErrores();
         let esValido = true;
@@ -93,7 +217,6 @@
         if (esVacio(rucVal)) {
           mostrarError("ruc", "error_ruc", "El RUC es obligatorio.");
           esValido = false;
-
         } else if (!esRucEcuatoriano(rucVal)) {
           mostrarError("ruc", "error_ruc", "El RUC ingresado no es válido.");
           esValido = false;
@@ -126,6 +249,82 @@
 
         return esValido;
       }
+
+// --- GUARDAR (CREAR O EDITAR) ---
+        async function guardarProveedor() {
+            if (!validarProveedor()) return;
+
+            const id = document.getElementById("id_proveedor_edit").value;
+            const datos = {
+                nombre: document.getElementById("nombre").value.trim(),
+                ruc: document.getElementById("ruc").value.trim(),
+                telefono: document.getElementById("telefono").value.trim(),
+                email: document.getElementById("email").value.trim(),
+            };
+
+            const metodo = id ? "PUT" : "POST";
+            const url = id ? `/api/proveedores/${id}` : "/api/proveedores";
+
+            try {
+                const respuesta = await fetch(url, {
+                    method: metodo,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos),
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    alert("" + resultado.mensaje);
+                    resetForm();
+                    cargarProveedores();
+                } else {
+                    alert("Error: " + resultado.mensaje);
+                }
+            } catch (error) {
+                alert("Error de conexión con el servidor.");
+            }
+        }
+
+        // --- PREPARAR EDICIÓN ---
+        function prepararEdicion(id, nombre, ruc, telefono, email) {
+            document.getElementById("id_proveedor_edit").value = id;
+            document.getElementById("nombre").value = nombre;
+            document.getElementById("ruc").value = ruc;
+            document.getElementById("telefono").value = telefono;
+            document.getElementById("email").value = email;
+
+            document.getElementById("titulo-form").innerText = "Editar Proveedor #" + id;
+            document.getElementById("texto-boton").innerText = "Actualizar";
+            document.getElementById("btn-cancelar").style.display = "block";
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- RESETEAR FORMULARIO ---
+        function resetForm() {
+            document.getElementById("form-proveedor").reset();
+            document.getElementById("id_proveedor_edit").value = "";
+            document.getElementById("titulo-form").innerText = "Registrar Proveedor";
+            document.getElementById("texto-boton").innerText = "Guardar Proveedor";
+            document.getElementById("btn-cancelar").style.display = "none";
+            limpiarErrores();
+        }
+
+        // --- ELIMINAR ---
+        async function eliminarProveedor(id) {
+            if(!confirm("¿Eliminar este proveedor?")) return;
+            try {
+                const res = await fetch(`/api/proveedores/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if(res.ok) {
+                    alert("Eliminado");
+                    cargarProveedores();
+                } else {
+                    alert("" + data.mensaje);
+                }
+            } catch (e) { alert("Error de conexión"); }
+        }
     </script>
   </body>
 </html>

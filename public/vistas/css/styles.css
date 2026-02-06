@@ -392,11 +392,11 @@ table {
 
 /* El mensaje de texto rojo debajo del input */
 .error-msg {
-  color: #dc3545; 
+  color: #dc3545;
   font-size: 0.85em;
   margin-top: 5px;
   font-weight: bold;
-  display: none; 
+  display: none;
 }
 
 /* El estilo del input cuando tiene error (Borde rojo) */
@@ -412,39 +412,99 @@ input.input-error {
 
 /* --- BOTÓN REGRESAR (FLOTANTE) --- */
 .btn-regresar {
-    position: absolute; 
-    top: 20px;
-    left: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px; 
-    text-decoration: none;
-    color: #555; 
-    font-family: sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 8px 12px;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    z-index: 1000;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #555;
+  font-family: sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  z-index: 1000;
 }
 
 /* Efecto al pasar el mouse */
 .btn-regresar:hover {
-    background-color: #f0f0f0;
-    color: #000;
-    transform: translateX(-3px); 
+  background-color: #f0f0f0;
+  color: #000;
+  transform: translateX(-3px);
 }
 
 /* Ajuste para móviles: que no se pegue tanto al borde */
 @media (max-width: 600px) {
-    .btn-regresar {
-        top: 10px;
-        left: 10px;
-        font-size: 0; 
-    }
-    .btn-regresar svg {
-        width: 24px;
-        height: 24px;
-    }
+  .btn-regresar {
+    top: 10px;
+    left: 10px;
+    font-size: 0;
+  }
+  .btn-regresar svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+body {
+  padding-bottom: 300px;
+}
+
+.search-group {
+  display: flex; 
+  gap: 10px; 
+  align-items: stretch; 
+}
+
+.btn-search {
+  background-color: #6c5ce7; 
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-search:hover {
+  background-color: #5a4ad1; 
+}
+
+/* Ajuste para que el input ocupe todo el espacio sobrante */
+.input-search {
+  flex-grow: 1;
+}
+
+/* Estilo para el botón Cancelar */
+.btn-secondary {
+    background-color: #636e72;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    height: 100%; 
+}
+
+.btn-secondary:hover {
+    background-color: #2d3436; 
+}
+
+/* Contenedor para separar los botones */
+.grupo-botones {
+    display: flex;
+    gap: 15px; 
+    align-items: center;
+    margin-top: 15px;
 }

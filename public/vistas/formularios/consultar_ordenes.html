@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Listado de Órdenes de Compra</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      /* Estilos de la tabla similares a los que ya tienes */
+      #tabla-listado {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      #tabla-listado th {
+        background-color: #f3f0fc;
+        color: #5e2a84;
+        padding: 12px;
+        text-align: center;
+      }
+      #tabla-listado td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+      }
+
+      /* Badges de estado */
+      .badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.85em;
+        font-weight: bold;
+        text-transform: capitalize;
+        border: 1px solid transparent;
+      }
+
+      /* 1. Emitida: Azul (Estado inicial) */
+      .estado-emitida {
+        background: #e3f2fd;
+        color: #1976d2;
+        border-color: #bbdefb;
+      }
+
+      /* 2. En Proceso: Naranja/Amarillo (Está ocurriendo) */
+      .estado-en-proceso {
+        background: #fff3cd;
+        color: #856404;
+        border-color: #ffeeba;
+      }
+
+      /* 3. Entregada: Verde (Finalizado con éxito) */
+      .estado-entregada {
+        background: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+      }
+
+      /* 4. Anulada: Rojo (Cancelado) */
+      .estado-anulada {
+        background: #ffebee;
+        color: #c62828;
+        border-color: #f5c6cb;
+      }
+
+      .btn-anular {
+        background: #ff7675;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-anular:disabled {
+        background: #dfe6e9;
+        cursor: not-allowed;
+      }
+      .btn-ver {
+        background-color: #0984e3;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../formularios/menu_principal.html" class="btn-regresar"
+      >⬅ Regresar</a
+    >
+
+    <div class="container" style="max-width: 1000px">
+      <h1>Órdenes de Compra Registradas</h1>
+
+      <table id="tabla-listado">
+        <thead>
+          <tr>
+            <th>N° OC</th>
+            <th>Fecha Emisión</th>
+            <th>Items</th>
+            <th>Monto Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="lista-ordenes"></tbody>
+      </table>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", cargarOrdenes);
+
+      async function cargarOrdenes() {
+        try {
+          const res = await fetch("/api/ordenes");
+          const ordenes = await res.json();
+          const tbody = document.getElementById("lista-ordenes");
+          tbody.innerHTML = "";
+
+          ordenes.forEach((o) => {
+            const statusClass = `estado-${o.estado_OC.toLowerCase().replace(" ", "-")}`;
+            const esAnulable = o.estado_OC === "Emitida";
+
+            tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${o.id_OC}</strong></td>
+                            <td>${new Date(o.fecha_emision).toLocaleDateString()}</td>
+                            <td>${o.cantidad_items}</td>
+                            <td>$${parseFloat(o.monto_total_OC).toFixed(2)}</td>
+                            <td><span class="badge ${statusClass}">${o.estado_OC}</span></td>
+                            <td>
+                                <button class="btn-ver" onclick="verDetalle(${o.id_OC})">Ver</button>
+                                <button class="btn-anular" 
+                                        onclick="confirmarAnulacion(${o.id_OC})"
+                                        ${!esAnulable ? "disabled" : ""}
+                                        title="${esAnulable ? "Anular orden" : "Solo se pueden anular órdenes emitidas"}">
+                                    Anular
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+          });
+        } catch (error) {
+          console.error("Error cargando órdenes:", error);
+        }
+      }
+
+      async function confirmarAnulacion(id) {
+        if (!confirm(`¿Está seguro de anular la Orden de Compra N° ${id}?`))
+          return;
+
+        try {
+          const res = await fetch(`/api/ordenes/anular/${id}`, {
+            method: "PUT",
+          });
+          const resultado = await res.json();
+
+          if (res.ok) {
+            alert(resultado.mensaje);
+            cargarOrdenes();
+          } else {
+            alert("Error: " + resultado.mensaje);
+          }
+        } catch (error) {
+          alert("Error de conexión.");
+        }
+      }
+      async function verDetalle(id) {
+        try {
+          const res = await fetch(`/api/ordenes/${id}`);
+          if (!res.ok) throw new Error("No se pudo obtener el detalle.");
+
+          const data = await res.json();
+
+          // 1. Llenar info general
+          document.getElementById("modal-titulo").innerText =
+            `Orden de Compra N° ${data.id_OC}`;
+          document.getElementById("modal-info-general").innerHTML = `
+            <p><strong>Fecha:</strong> ${new Date(data.fecha_emision).toLocaleDateString()}</p>
+            <p><strong>Estado:</strong> ${data.estado_OC}</p>
+            <p><strong>Total Unidades:</strong> ${data.total_unidades}</p>
+            <p><strong>Monto Total:</strong> $${parseFloat(data.monto_total_OC).toFixed(2)}</p>
+        `;
+
+          // 2. Llenar tabla de productos
+          const tbody = document.getElementById("modal-tabla-cuerpo");
+          tbody.innerHTML = "";
+
+          data.detalles.forEach((d) => {
+            const subtotal = d.cantidad * d.precio_unitario;
+            tbody.innerHTML += `
+                <tr style="text-align: center; border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;">${d.nombre_producto}</td>
+                    <td>${d.cantidad}</td>
+                    <td>$${parseFloat(d.precio_unitario).toFixed(2)}</td>
+                    <td>$${subtotal.toFixed(2)}</td>
+                </tr>
+            `;
+          });
+
+          // 3. Mostrar Modal
+          document.getElementById("modal-detalle").style.display = "block";
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
+      }
+
+      function cerrarModal() {
+        document.getElementById("modal-detalle").style.display = "none";
+      }
+    </script>
+    <div
+      id="modal-detalle"
+      class="modal"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      "
+    >
+      <div
+        style="
+          background-color: white;
+          margin: 5% auto;
+          padding: 20px;
+          border-radius: 8px;
+          width: 70%;
+          max-width: 800px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        "
+      >
+        <span
+          onclick="cerrarModal()"
+          style="
+            float: right;
+            cursor: pointer;
+            font-size: 28px;
+            font-weight: bold;
+          "
+          >&times;</span
+        >
+        <h2 id="modal-titulo">Detalle de la Orden</h2>
+        <hr />
+        <div
+          id="modal-info-general"
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+          "
+        ></div>
+        <table style="width: 100%; border-collapse: collapse">
+          <thead style="background: #f3f0fc; color: #5e2a84">
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unit.</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="modal-tabla-cuerpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
