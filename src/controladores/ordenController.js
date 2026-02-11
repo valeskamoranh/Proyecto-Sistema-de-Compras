@@ -64,10 +64,13 @@ ordenController.crearOrden = async (req, res) => {
 
 ordenController.listar = async (req, res) => {
     try {
-        const [ordenes] = await ordenQueries.listarTodas();
+        const { inicio, fin } = req.query;
+
+        const [ordenes] = await ordenQueries.listarConFiltro(inicio, fin);
         res.json(ordenes);
     } catch (error) {
-        res.status(500).json({ mensaje: "Error al obtener el listado" });
+        console.error("Error al filtrar órdenes:", error);
+        res.status(500).json({ mensaje: "Error al obtener el listado de órdenes" });
     }
 };
 
@@ -102,9 +105,9 @@ ordenController.anular = async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error al anular la orden:", error);
-        res.status(500).json({ mensaje: "No se pudo anular la orden. Inténtelo de nuevo."});
+        res.status(500).json({ mensaje: "No se pudo anular la orden. Inténtelo de nuevo." });
     } finally {
-        connection.release(); 
+        connection.release();
     }
 };
 
@@ -117,4 +120,25 @@ ordenController.obtenerParaContabilidad = async (req, res) => {
     }
 };
 
+ordenController.generarReportePDF = async (req, res) => {
+    try {
+        const { inicio, fin } = req.query;
+        const [ordenes] = await ordenQueries.obtenerDatosReporte(inicio, fin);
+
+        if (ordenes.length === 0) {
+            return res.status(404).json({ mensaje: "No hay órdenes que coincidan con los filtros." });
+        }
+
+        const datosPDF = {
+            titulo: "Reporte de Órdenes de Compra",
+            rango: (inicio && fin) ? `Del ${inicio} al ${fin}` : "Todas las fechas",
+            registros: ordenes,
+            totalGeneral: ordenes.reduce((sum, o) => sum + parseFloat(o.monto_total_OC), 0)
+        };
+        
+        res.json({ mensaje: "Lógica de PDF preparada", datos: datosPDF }); 
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al generar el reporte" });
+    }
+};
 module.exports = ordenController;

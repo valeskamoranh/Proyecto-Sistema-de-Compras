@@ -26,6 +26,23 @@
       </div>
     </div>
 
+    <div class="filtros-container" style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 20px;">
+      <div>
+        <label>Desde:</label>
+        <input type="date" id="filtro-inicio" class="input-tabla">
+      </div>
+      <div>
+        <label>Hasta:</label>
+        <input type="date" id="filtro-fin" class="input-tabla">
+      </div>
+      <button onclick="cargarOrdenes()" class="btn-ver" style="padding: 8px 20px;">Filtrar</button>
+      <button onclick="limpiarFiltros()"
+        style="background:none; border:none; color:blue; cursor:pointer;">Limpiar</button>
+      <button onclick="exportarReportePDF()" class="btn-pdf" style="background-color: #e74c3c; color: white;">
+        📥 Descargar Reporte PDF
+      </button>
+    </div>
+
     <table id="tabla-listado">
       <thead>
         <tr>
@@ -93,8 +110,16 @@
     document.addEventListener("DOMContentLoaded", cargarOrdenes);
 
     async function cargarOrdenes() {
+      const inicio = document.getElementById("filtro-inicio").value;
+      const fin = document.getElementById("filtro-fin").value;
+
+      let url = "/api/ordenes";
+      if (inicio && fin) {
+        url += `?inicio=${inicio}&fin=${fin}`;
+      }
+
       try {
-        const res = await fetch("/api/ordenes");
+        const res = await fetch(url);
         const ordenes = await res.json();
         const tbody = document.getElementById("lista-ordenes");
         tbody.innerHTML = "";
@@ -119,6 +144,7 @@
                                         title="${esAnulable ? "Anular orden" : "Solo se pueden anular órdenes emitidas"}">
                                     Anular
                                 </button>
+                                <a href="/api/reportes/orden-compra/${o.id_OC}/pdf" target="_blank" class="btn btn-pdf">📄 PDF </a>
                             </td>
                         </tr>
                     `;
@@ -128,15 +154,21 @@
       }
     }
 
+    function limpiarFiltros() {
+      document.getElementById("filtro-inicio").value = "";
+      document.getElementById("filtro-fin").value = "";
+      cargarOrdenes();
+    }
+
     function filtrarTabla() {
       const input = document.getElementById("input-busqueda");
       const filtro = input.value.toUpperCase();
       const tr = document.querySelectorAll("#lista-ordenes tr");
 
       tr.forEach(fila => {
-        const tdId = fila.cells[0];      
-        const tdCot = fila.cells[1];     
-        const tdEstado = fila.cells[5];  
+        const tdId = fila.cells[0];
+        const tdCot = fila.cells[1];
+        const tdEstado = fila.cells[5];
 
         if (tdId && tdCot) {
           const texto = (tdId.textContent + tdCot.textContent + tdEstado.textContent).toUpperCase();
@@ -165,6 +197,7 @@
         alert("Error de conexión.");
       }
     }
+
     async function verDetalle(id) {
       try {
         const res = await fetch(`/api/ordenes/${id}`);
@@ -212,6 +245,23 @@
 
     window.onclick = function (event) {
       if (event.target == document.getElementById("modal-detalle")) cerrarModal();
+    }
+
+    function exportarReportePDF() {
+      const inicio = document.getElementById("filtro-inicio").value;
+      const fin = document.getElementById("filtro-fin").value;
+      const busqueda = document.getElementById("input-busqueda").value;
+
+      let url = `/api/ordenes/reporte-pdf?`;
+
+      const params = new URLSearchParams();
+      if (inicio) params.append("inicio", inicio);
+      if (fin) params.append("fin", fin);
+      if (busqueda) params.append("q", busqueda);
+
+      url += params.toString();
+
+      window.open(url, '_blank');
     }
   </script>
 </body>

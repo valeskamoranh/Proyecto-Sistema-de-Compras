@@ -36,11 +36,6 @@ const ordenQueries = {
         return await executor.query(sql, [id_cotizacion]);
     },
 
-    listarTodas: async () => {
-        const sql = "SELECT * FROM ORDEN_COMPRA ORDER BY id_OC DESC";
-        return await db.query(sql);
-    },
-
     obtenerPorId: async (id) => {
         const sql = "SELECT * FROM ORDEN_COMPRA WHERE id_OC = ?";
         return await db.query(sql, [id]);
@@ -93,6 +88,51 @@ const ordenQueries = {
             ORDER BY oc.fecha_emision DESC
         `;
         return await db.query(sql);
+    },
+
+    // En tu archivo de consultas de órdenes
+    listarConFiltro: async (fechaInicio, fechaFin) => {
+        let sql = `
+        SELECT oc.*, 
+               (SELECT COUNT(*) FROM DETALLE_ORDEN_COMPRA d WHERE d.id_OC = oc.id_OC) as cantidad_items
+        FROM ORDEN_COMPRA oc
+    `;
+
+        const params = [];
+
+        if (fechaInicio && fechaFin && fechaInicio.trim() !== "" && fechaFin.trim() !== "") {
+            sql += " WHERE oc.fecha_emision BETWEEN ? AND ? ";
+            params.push(fechaInicio, fechaFin);
+        }
+
+        sql += " ORDER BY oc.id_OC DESC";
+
+        return await db.query(sql, params);
+    },
+
+    obtenerDatosReporteAvanzado: async (inicio, fin, busqueda) => {
+        let sql = `
+        SELECT oc.*, p.nombre AS nombre_proveedor
+        FROM ORDEN_COMPRA oc
+        JOIN COTIZACION c ON oc.id_cotizacion = c.id_cotizacion
+        JOIN PROVEEDOR p ON c.id_proveedor = p.id_proveedor
+        WHERE 1=1
+    `;
+        const params = [];
+
+        if (inicio && fin && inicio !== "" && fin !== "") {
+            sql += " AND oc.fecha_emision BETWEEN ? AND ? ";
+            params.push(inicio, fin);
+        }
+
+        if (busqueda && busqueda.trim() !== "") {
+            sql += " AND (oc.id_OC LIKE ? OR p.nombre LIKE ? OR oc.estado_OC LIKE ?) ";
+            const term = `%${busqueda}%`;
+            params.push(term, term, term);
+        }
+
+        sql += " ORDER BY oc.fecha_emision DESC";
+        return await db.query(sql, params);
     }
 };
 

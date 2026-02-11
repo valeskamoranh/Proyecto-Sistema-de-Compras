@@ -30,6 +30,7 @@ const requisicionRoutes = require('./src/routes/requisicionRoutes');
 const cotizacionRoutes = require('./src/routes/cotizacionRoutes');
 const ordenRoutes = require('./src/routes/ordenRoutes');
 const recepcionRoutes = require('./src/routes/recepcionRoutes');
+const reportesRoutes = require('./src/routes/reportesRoutes');
 
 
 // 2. CONECTAR
@@ -41,6 +42,7 @@ app.use('/api/requisiciones', requisicionRoutes);
 app.use('/api/cotizaciones', cotizacionRoutes);
 app.use('/api/ordenes', ordenRoutes);
 app.use('/api/recepciones', recepcionRoutes);
+app.use('/api/reportes', reportesRoutes);
 
 
 // --- INICIAR SERVIDOR ---
