@@ -1,157 +1,94 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Gestión de Área</title>
-    <link rel="stylesheet" href="../css/styles.css" />
-    <style>
-      .container-tabla {
-        margin-bottom: 30px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        background: white;
-      }
-      th,
-      td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-      }
-      th {
-        background-color: #f4f4f4;
-      }
-      .acciones {
-        display: flex;
-        gap: 8px;
-        justify-content: center;
-      }
-      .btn-edit {
-        background-color: #0984e3;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .btn-delete {
-        background-color: #d63031;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .editando {
-        border: 2px solid #0984e3 !important;
-        background-color: #f0f7ff;
-      }
-    </style>
-  </head>
 
-  <body>
-    <a href="../formularios/menu_principal.html" class="btn-regresar">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      Regresar al Menú Principal
-    </a>
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Área</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
 
-    <form id="form-area" class="container">
-      <h1 id="titulo-form">Registrar Área</h1>
-      <input type="hidden" id="id_area_edit" value="" />
-      <div class="form-group">
-        <label for="nombre_area">Nombre del área</label>
-        <input type="text" id="nombre_area" name="nombre_area" />
-        <div id="error_nombre" class="error-msg"></div>
-      </div>
+<body>
+  <a href="../formularios/menu_principal.html" class="btn-regresar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+    Regresar al Menú Principal
+  </a>
 
-      <div class="form-group">
-        <label for="responsable">Responsable</label>
-        <input type="text" id="responsable" name="responsable" />
-        <div id="error_responsable" class="error-msg"></div>
-      </div>
-
-      <div class="grupo-botones">
-        <button type="button" class="btn-guardar" onclick="guardarArea()">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            style="vertical-align: middle; margin-right: 5px"
-          >
-            <path
-              fill="currentColor"
-              d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-            />
-          </svg>
-          <span id="texto-boton">Guardar</span>
-        </button>
-        <button
-          type="button"
-          id="btn-cancelar"
-          class="btn-secondary"
-          onclick="resetForm()"
-          style="display: none"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            style="vertical-align: middle; margin-right: 5px"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-          Cancelar
-        </button>
-      </div>
-    </form>
-
-    <div class="container container-tabla">
-      <h1>Áreas Registradas</h1>
-      <table id="tabla-areas">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre del Área</th>
-            <th>Responsable</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="lista-areas"></tbody>
-      </table>
+  <form id="form-area" class="container">
+    <h1 id="titulo-form">Registrar Área</h1>
+    <input type="hidden" id="id_area_edit" value="" />
+    <div class="form-group">
+      <label for="nombre_area">Nombre del área</label>
+      <input type="text" id="nombre_area" name="nombre_area" />
+      <div id="error_nombre" class="error-msg"></div>
     </div>
 
-    <script src="../js/validaciones.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", cargarAreas);
-      async function cargarAreas() {
-        try {
-          const res = await fetch("/api/areas");
-          const areas = await res.json();
-          const tbody = document.getElementById("lista-areas");
-          tbody.innerHTML = "";
+    <div class="form-group">
+      <label for="responsable">Responsable</label>
+      <input type="text" id="responsable" name="responsable" />
+      <div id="error_responsable" class="error-msg"></div>
+    </div>
 
-          areas.forEach((a) => {
-            tbody.innerHTML += `
+    <div class="grupo-botones">
+      <button type="button" class="btn-guardar" onclick="guardarArea()">
+        <svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align: middle; margin-right: 5px">
+          <path fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z" />
+        </svg>
+        <span id="texto-boton">Guardar</span>
+      </button>
+      <button type="button" id="btn-cancelar" class="btn-cancelar" onclick="resetForm()" style="display: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Cancelar Edición
+      </button>
+    </div>
+  </form>
+
+  <div class="container container-tabla">
+    <h1>Áreas Registradas</h1>
+
+    <div class="busqueda-container">
+      <div class="busqueda-input-wrapper">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#636e72" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="input-busqueda" placeholder="Buscar área o responsable..." onkeyup="filtrarTabla()" />
+      </div>
+    </div>
+
+    <table id="tabla-areas">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre del Área</th>
+          <th>Responsable</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="lista-areas"></tbody>
+    </table>
+  </div>
+
+  <script src="../js/validaciones.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", cargarAreas);
+    async function cargarAreas() {
+      try {
+        const res = await fetch("/api/areas");
+        const areas = await res.json();
+        const tbody = document.getElementById("lista-areas");
+        tbody.innerHTML = "";
+
+        areas.forEach((a) => {
+          tbody.innerHTML += `
                         <tr>
                             <td>${a.id_area}</td>
                             <td>${a.nombre_area}</td>
@@ -162,155 +99,177 @@
                             </td>
                         </tr>
                     `;
-          });
-        } catch (error) {
-          console.error("Error al cargar:", error);
-        }
-      }
-
-      function prepararEdicion(id, nombre, responsable) {
-        document.getElementById("id_area_edit").value = id;
-        document.getElementById("nombre_area").value = nombre;
-        document.getElementById("responsable").value = responsable;
-
-        document.getElementById("titulo-form").innerText =
-          "Editando Área #" + id;
-        document.getElementById("texto-boton").innerText = "Actualizar Cambios";
-        document.getElementById("btn-cancelar").style.display = "block";
-        document.getElementById("form-area").classList.add("editando");
-
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: "smooth",
         });
+      } catch (error) {
+        console.error("Error al cargar:", error);
+      }
+    }
+
+    function prepararEdicion(id, nombre, responsable) {
+      document.getElementById("id_area_edit").value = id;
+      document.getElementById("nombre_area").value = nombre;
+      document.getElementById("responsable").value = responsable;
+
+      document.getElementById("titulo-form").innerText =
+        "Editando Área #" + id;
+      document.getElementById("texto-boton").innerText = "Actualizar Cambios";
+      document.getElementById("btn-cancelar").style.display = "block";
+      document.getElementById("form-area").classList.add("editando");
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+
+    async function eliminarArea(id) {
+      if (!confirm(`¿Estás seguro de eliminar el área #${id}?`)) return;
+      try {
+        const res = await fetch(`/api/areas/${id}`, { method: "DELETE" });
+        const result = await res.json();
+        alert(result.mensaje);
+        cargarAreas();
+      } catch (error) {
+        alert("No se pudo eliminar el área.");
+      }
+    }
+
+    function resetForm() {
+      const formulario = document.getElementById("form-area");
+      formulario.reset();
+      document.getElementById("id_area_edit").value = "";
+      document.getElementById("titulo-form").innerText = "Registrar Área";
+      document.getElementById("texto-boton").innerText = "Guardar";
+      document.getElementById("btn-cancelar").style.display = "none";
+      formulario.classList.remove("editando");
+      if (typeof limpiarErrores === "function") limpiarErrores();
+    }
+
+    function validarArea() {
+      if (typeof limpiarErrores === "function") limpiarErrores();
+
+      let esValido = true;
+
+      const nombreInput = document.getElementById("nombre_area");
+      const responsableInput = document.getElementById("responsable");
+
+      const nombre = nombreInput.value;
+      const responsable = responsableInput.value;
+
+      // --- Validar Nombre ---
+      if (esVacio(nombre)) {
+        mostrarError(
+          "nombre_area",
+          "error_nombre",
+          "El nombre es obligatorio.",
+        );
+        esValido = false;
+      } else if (!esSoloTexto(nombre)) {
+        mostrarError(
+          "nombre_area",
+          "error_nombre",
+          "Solo se permiten letras.",
+        );
+        esValido = false;
+      } else if (!cumpleLongitudMinima(nombre, 3)) {
+        mostrarError("nombre_area", "error_nombre", "Mínimo 3 caracteres.");
+        esValido = false;
       }
 
-      async function eliminarArea(id) {
-        if (!confirm(`¿Estás seguro de eliminar el área #${id}?`)) return;
-        try {
-          const res = await fetch(`/api/areas/${id}`, { method: "DELETE" });
-          const result = await res.json();
-          alert(result.mensaje);
-          cargarAreas();
-        } catch (error) {
-          alert("No se pudo eliminar el área.");
-        }
+      // --- Validar Responsable ---
+      if (esVacio(responsable)) {
+        mostrarError(
+          "responsable",
+          "error_responsable",
+          "El responsable es obligatorio.",
+        );
+        esValido = false;
+      } else if (!esSoloTexto(responsable)) {
+        mostrarError(
+          "responsable",
+          "error_responsable",
+          "Solo se permiten letras.",
+        );
+        esValido = false;
+      } else if (!cumpleLongitudMinima(responsable, 3)) {
+        mostrarError("responsable", "error_responsable", "Nombre muy corto.");
+        esValido = false;
       }
 
-      function resetForm() {
-        const formulario = document.getElementById("form-area");
-        formulario.reset();
-        document.getElementById("id_area_edit").value = "";
-        document.getElementById("titulo-form").innerText =
-          "Registrar Nueva Área";
-        document.getElementById("texto-boton").innerText = "Guardar";
-        document.getElementById("btn-cancelar").style.display = "none";
-        formulario.classList.remove("editando");
-        if (typeof limpiarErrores === "function") limpiarErrores();
+      return esValido;
+    }
+
+    async function guardarArea() {
+      if (!validarArea()) {
+        return;
       }
 
-      function validarArea() {
-        if (typeof limpiarErrores === "function") limpiarErrores();
+      const id = document.getElementById("id_area_edit").value;
+      const datosAEnviar = {
+        nombre_area: document.getElementById("nombre_area").value.trim(),
+        responsable: document.getElementById("responsable").value.trim(),
+      };
 
-        let esValido = true;
+      const metodo = id ? "PUT" : "POST";
+      const url = id ? `/api/areas/${id}` : "/api/areas";
+      try {
+        const respuesta = await fetch(url, {
+          method: metodo,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datosAEnviar),
+        });
 
-        const nombreInput = document.getElementById("nombre_area");
-        const responsableInput = document.getElementById("responsable");
-
-        const nombre = nombreInput.value;
-        const responsable = responsableInput.value;
-
-        // --- Validar Nombre ---
-        if (esVacio(nombre)) {
-          mostrarError(
-            "nombre_area",
-            "error_nombre",
-            "El nombre es obligatorio.",
-          );
-          esValido = false;
-        } else if (!esSoloTexto(nombre)) {
-          mostrarError(
-            "nombre_area",
-            "error_nombre",
-            "Solo se permiten letras.",
-          );
-          esValido = false;
-        } else if (!cumpleLongitudMinima(nombre, 3)) {
-          mostrarError("nombre_area", "error_nombre", "Mínimo 3 caracteres.");
-          esValido = false;
-        }
-
-        // --- Validar Responsable ---
-        if (esVacio(responsable)) {
-          mostrarError(
-            "responsable",
-            "error_responsable",
-            "El responsable es obligatorio.",
-          );
-          esValido = false;
-        } else if (!esSoloTexto(responsable)) {
-          mostrarError(
-            "responsable",
-            "error_responsable",
-            "Solo se permiten letras.",
-          );
-          esValido = false;
-        } else if (!cumpleLongitudMinima(responsable, 3)) {
-          mostrarError("responsable", "error_responsable", "Nombre muy corto.");
-          esValido = false;
-        }
-
-        return esValido;
-      }
-
-      async function guardarArea() {
-        if (!validarArea()) {
-          return;
-        }
-
-        const id = document.getElementById("id_area_edit").value;
-        const datosAEnviar = {
-          nombre_area: document.getElementById("nombre_area").value.trim(),
-          responsable: document.getElementById("responsable").value.trim(),
-        };
-
-        const metodo = id ? "PUT" : "POST";
-        const url = id ? `/api/areas/${id}` : "/api/areas";
-        try {
-          const respuesta = await fetch(url, {
-            method: metodo,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datosAEnviar),
-          });
-
-          if (respuesta.ok) {
-            let mensajeExito = "Operación realizada correctamente";
-            try {
-              const resultado = await respuesta.json();
-              mensajeExito = resultado.mensaje;
-            } catch (e) {
-              console.log(
-                "El servidor no envió un JSON, pero la DB se actualizó.",
-              );
-            }
-
-            alert("" + mensajeExito);
-            resetForm();
-            cargarAreas();
-          } else {
-            const errorData = await respuesta
-              .json()
-              .catch(() => ({ mensaje: "Error desconocido en el servidor" }));
-            alert("ERROR: " + errorData.mensaje);
+        if (respuesta.ok) {
+          let mensajeExito = "Operación realizada correctamente";
+          try {
+            const resultado = await respuesta.json();
+            mensajeExito = resultado.mensaje;
+          } catch (e) {
+            console.log(
+              "El servidor no envió un JSON, pero la DB se actualizó.",
+            );
           }
-        } catch (error) {
-          console.error("Error técnico:", error);
-          alert(
-            "Los cambios se enviaron, pero hubo un problema al confirmar. Por favor, revisa la tabla.",
-          );
+
+          alert("" + mensajeExito);
+          resetForm();
           cargarAreas();
+        } else {
+          const errorData = await respuesta
+            .json()
+            .catch(() => ({ mensaje: "Error desconocido en el servidor" }));
+          alert("ERROR: " + errorData.mensaje);
         }
+      } catch (error) {
+        console.error("Error técnico:", error);
+        alert(
+          "Los cambios se enviaron, pero hubo un problema al confirmar. Por favor, revisa la tabla.",
+        );
+        cargarAreas();
       }
-    </script>
-  </body>
+    }
+
+    function filtrarTabla() {
+      const texto = document
+        .getElementById("input-busqueda")
+        .value.toLowerCase();
+      const filas = document.querySelectorAll("#lista-areas tr");
+
+      filas.forEach((fila) => {
+        const nombreArea = fila.cells[1]
+          ? fila.cells[1].textContent.toLowerCase()
+          : "";
+        const responsable = fila.cells[2]
+          ? fila.cells[2].textContent.toLowerCase()
+          : "";
+
+        if (nombreArea.includes(texto) || responsable.includes(texto)) {
+          fila.style.display = "";
+        } else {
+          fila.style.display = "none";
+        }
+      });
+    }
+  </script>
+</body>
+
 </html>

@@ -1,179 +1,153 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Registrar Recepción</title>
-    <link rel="stylesheet" href="../css/styles.css" />
-    <style>
-      td {
-        vertical-align: top;
-      }
-      td .error-msg {
-        font-size: 0.75em;
-        margin-top: 2px;
-      }
-    </style>
-  </head>
-  <body>
-    <a href="../formularios/menu_principal.html" class="btn-regresar">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      Regresar al Menú Principal
-    </a>
-    <form id="form-recepcion" class="container">
-      <h1>Registrar Recepción</h1>
 
-      <div
-        class="form-group"
-        style="
+<head>
+  <meta charset="UTF-8" />
+  <title>Registrar Recepción</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <style>
+    td {
+      vertical-align: top;
+    }
+
+    td .error-msg {
+      font-size: 0.75em;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="../formularios/menu_principal.html" class="btn-regresar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+    Regresar al Menú Principal
+  </a>
+  <form id="form-recepcion" class="container">
+    <h1>Registrar Recepción</h1>
+
+    <div class="form-group" style="
           background: #f8f9fa;
           padding: 15px;
           border-radius: 8px;
           border: 1px solid #ddd;
-        "
-      >
-        <label> Buscar Orden de Compra</label>
-        <div class="search-group">
-          <input type="number" id="id_oc_search" name=" id_OC" required />
-          <button type="button" class="btn-search" onclick="buscarOrden()">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            Cargar Orden
-          </button>
-        </div>
-        <div id="error_oc" class="error-msg"></div>
+        ">
+      <label> Buscar Orden de Compra</label>
+      <div class="search-group">
+        <input type="number" id="id_oc_search" name=" id_OC" placeholder="Ej: 90000" required />
+        <button type="button" class="btn-search" onclick="buscarOrden()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Cargar Productos
+        </button>
       </div>
+      <div id="error_oc" class="error-msg"></div>
+    </div>
 
-      <div class="form-group">
-        <label for="fecha_recepcion">Fecha de recepción</label>
-        <input
-          type="date"
-          id="fecha_recepcion"
-          name="fecha_recepcion"
-          required
-        />
-        <div id="error_fecha" class="error-msg"></div>
-      </div>
+    <div class="form-group">
+      <label for="fecha_recepcion">Fecha de recepción</label>
+      <input type="date" id="fecha_recepcion" name="fecha_recepcion" required />
+      <div id="error_fecha" class="error-msg"></div>
+    </div>
 
-      <div class="form-group">
-        <label for="observaciones">Observaciones</label>
-        <textarea id="observaciones" name="observaciones"></textarea>
-        <div id="error_observaciones" class="error-msg"></div>
-      </div>
+    <div class="form-group">
+      <label for="estado_recepcion">Estado</label>
+      <select id="estado_recepcion" name="estado_recepcion" required>
+        <option value="">Seleccione</option>
+        <option value="Completa">Completa</option>
+        <option value="Parcial">Parcial</option>
+        <option value="Rechazada">Rechazada</option>
+      </select>
+      <div id="error_estado" class="error-msg"></div>
+    </div>
 
-      <div class="form-group">
-        <label for="estado_recepcion">Estado</label>
-        <select id="estado_recepcion" name="estado_recepcion" required>
-          <option value="">Seleccione</option>
-          <option value="Completa">Completa</option>
-          <option value="Parcial">Parcial</option>
-          <option value="Rechazada">Rechazada</option>
-        </select>
-        <div id="error_estado" class="error-msg"></div>
-      </div>
+    <div class="form-group">
+      <label for="observaciones">Observaciones</label>
+      <textarea id="observaciones" name="observaciones"></textarea>
+      <div id="error_observaciones" class="error-msg"></div>
+    </div>
 
-      <h2>Verificación de Productos</h2>
-      <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
+    <h2>Verificación de Productos</h2>
+    <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
 
-      <table id="tabla-detalle">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Cantidad recibida</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <input type="text" name="id_producto[]" class="input-texto" required>
-              <div class="error-msg"></div>
-            </td>
-            <td>
-              <input
-                type="number"
-                name="cantidad_recibida[]"
-                min="0"
-                class="input-numero"
-                required
-              />
-              <div class="error-msg"></div>
-            </td>
-            <td>
-              <button type="button" onclick="eliminarFila(this)">🗑</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <table id="tabla-detalle">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad recibida</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="3" style="text-align:center; color: #777">Ingrese el número de OC arriba para cargar los
+            productos.</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <button type="button" class="btn-guardar" onclick="guardarRecepcion()">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          style="vertical-align: middle; margin-right: 5px"
-        >
-          <path
-            fill="currentColor"
-            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-          />
-        </svg>
-        Guardar Recepción
-      </button>
-    </form>
+    <button type="button" class="btn-guardar" onclick="guardarRecepcion()">
+      <svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align: middle; margin-right: 5px">
+        <path fill="currentColor"
+          d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z" />
+      </svg>
+      Guardar Recepción
+    </button>
 
-    <script src="../js/validaciones.js"></script>
+  </form>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("fecha_recepcion").valueAsDate = new Date();
-      });
+  <script src="../js/validaciones.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const fechaInput = document.getElementById("fecha_recepcion");
+      const hoy = new Date();
 
-      async function buscarOrden() {
-        const idOC = document.getElementById("id_oc_search").value.trim();
-        const tbody = document.querySelector("#tabla-detalle tbody");
+      const anio = hoy.getFullYear();
+      const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoy.getDate()).padStart(2, '0');
 
-        if (typeof limpiarErrores === "function") limpiarErrores();
-        limpiarErroresVisuales();
+      fechaInput.value = `${anio}-${mes}-${dia}`;
+    });
 
-        if (!idOC) {
-          alert("Ingrese número de Orden.");
+    async function buscarOrden() {
+      const idOC = document.getElementById("id_oc_search").value.trim();
+      const tbody = document.querySelector("#tabla-detalle tbody");
+
+      if (!idOC) {
+        alert("Ingrese el número de la Orden de Compra.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/ordenes/${idOC}`);
+        if (!res.ok) throw new Error("La Orden de Compra no existe o está anulada.");
+
+        const data = await res.json();
+        // --- VALIDACIÓN DE ESTADOS ---
+        if (data.estado_OC === 'Anulada') {
+          alert("⛔ Esta Orden de Compra está ANULADA. No se pueden recibir productos.");
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red">Orden Anulada.</td></tr>';
           return;
         }
 
-        try {
-          const res = await fetch(`/api/ordenes/${idOC}`);
-          if (!res.ok) throw new Error("Orden no encontrada.");
+        if (data.estado_OC === 'Entregada') {
+          alert("Esta Orden de Compra ya ha sido completada.");
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:green">Orden ya entregada.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = "";
 
-          const data = await res.json();
-          tbody.innerHTML = "";
+        if (!data.detalles || data.detalles.length === 0) {
+          alert("Esta orden no tiene productos registrados.");
+          return;
+        }
 
-          if (!data.detalles || data.detalles.length === 0) {
-            alert("Esta orden no tiene productos.");
-            return;
-          }
-
-          data.detalles.forEach((d) => {
-            const fila = `
+        data.detalles.forEach((d) => {
+          const fila = `
                          <tr>
                             <td>
                                 <input type="hidden" class="id-prod" value="${d.id_producto}">
@@ -184,192 +158,144 @@
                                 <div class="error-msg"></div>
                             </td>
                             <td>
-                                <button type="button" class="btn-delete" onclick="eliminarFila(this)" title="Quitar de la recepción">
-                                    🗑
+                                <button type="button" class="btn-delete" onclick="eliminarFila(this)" title="Quitar de la recepción" style="background: #ff7675; color: white; border:none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                ✕
                                 </button>
                             </td>
                         </tr>
                     `;
-            tbody.innerHTML += fila;
-          });
-          document.getElementById("error_tabla").style.display = "none";
-          alert(" Orden cargada. Verifique las cantidades.");
-        } catch (error) {
-          console.error(error);
-          alert(" " + error.message);
-          tbody.innerHTML =
-            '<tr><td colspan="3" style="text-align:center; color:red">Intente con otro número.</td></tr>';
-        }
+          tbody.innerHTML += fila;
+        });
+        document.getElementById("error_tabla").style.display = "none";
+        alert(" Orden cargada. Verifique las cantidades.");
+      } catch (error) {
+        alert("" + error.message);
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red">Orden no encontrada.</td></tr>';
+      }
+    }
+
+    function eliminarFila(btn) {
+      const tbody = document.querySelector("#tabla-detalle tbody");
+      if (tbody.querySelectorAll("tr").length <= 1) {
+        return alert("No puede dejar la recepción vacía. Debe haber al menos un producto.");
+      }
+      if (confirm("¿Quitar este producto de la recepción?")) {
+        btn.closest("tr").remove();
+      }
+    }
+
+    function validarRecepcion() {
+      if (typeof limpiarErrores === "function") limpiarErrores();
+      if (typeof limpiarErroresVisuales === "function")
+        limpiarErroresVisuales();
+
+      let esValido = true;
+
+      // VALIDAR CABECERA
+      const inputOc = document.getElementById("id_oc_search");
+      const fecha = document.getElementById("fecha_recepcion").value;
+      const estado = document.getElementById("estado_recepcion").value;
+
+      // Validar ID
+      if (!inputOc || !inputOc.value.trim()) {
+        mostrarError(
+          "id_oc_search",
+          "error_oc",
+          "El número de Orden es obligatorio.",
+        );
+        esValido = false;
       }
 
-      function eliminarFila(btn) {
-        if (confirm("¿Desea quitar este producto de la recepción actual?")) {
-          const fila = btn.closest("tr");
-          fila.remove();
-
-          const tbody = document.querySelector("#tabla-detalle tbody");
-          if (tbody.rows.length === 0) {
-            tbody.innerHTML =
-              '<tr><td colspan="3" style="text-align:center; color: #777">Tabla vacía. Cargue una orden nuevamente.</td></tr>';
-          }
-        }
+      // Validar Fecha
+      if (esVacio(fecha)) {
+        mostrarError(
+          "fecha_recepcion",
+          "error_fecha",
+          "La fecha es obligatoria.",
+        );
+        esValido = false;
+      } else if (!esFechaNoFutura(fecha)) {
+        mostrarError(
+          "fecha_recepcion",
+          "error_fecha",
+          "La fecha del documento no puede ser futura.",
+        );
+        esValido = false;
       }
 
-      function validarRecepcion() {
-        if (typeof limpiarErrores === "function") limpiarErrores();
-        if (typeof limpiarErroresVisuales === "function")
-          limpiarErroresVisuales();
-
-        let esValido = true;
-
-        // VALIDAR CABECERA
-        const inputOc = document.getElementById("id_oc_search");
-        const fecha = document.getElementById("fecha_recepcion").value;
-        const estado = document.getElementById("estado_recepcion").value;
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
-
-        // Validar ID
-        if (!inputOc || !inputOc.value.trim()) {
-          mostrarError(
-            "id_oc_search",
-            "error_oc",
-            "El número de Orden es obligatorio.",
-          );
-          esValido = false;
-        }
-
-        // Validar Fecha
-        if (esVacio(fecha)) {
-          mostrarError(
-            "fecha_recepcion",
-            "error_fecha",
-            "La fecha es obligatoria.",
-          );
-          esValido = false;
-        } else if (!esFechaNoFutura(fecha)) {
-          mostrarError(
-            "fecha_recepcion",
-            "error_fecha",
-            "La fecha del documento no puede ser futura.",
-          );
-          esValido = false;
-        }
-
-        // Validar Estado
-        if (!estado) {
-          mostrarError(
-            "estado_recepcion",
-            "error_estado",
-            "Seleccione el estado.",
-          );
-          esValido = false;
-        }
-
-        // VALIDAR TABLA
-        const primeraFilaTexto = filas[0] ? filas[0].innerText : "";
-
-        if (
-          filas.length === 0 ||
-          primeraFilaTexto.includes("Cargar") ||
-          primeraFilaTexto.includes("Use el botón") ||
-          primeraFilaTexto.includes("Intente")
-        ) {
-          const errorTabla = document.getElementById("error_tabla");
-          if (errorTabla) {
-            errorTabla.innerText =
-              " La tabla no puede estar vacía. Cargue una Orden.";
-            errorTabla.style.display = "block";
-          }
-          esValido = false;
-        } else {
-          filas.forEach((fila) => {
-            const inputCant = fila.querySelector(".cant-recibida");
-
-            if (inputCant) {
-              const val = inputCant.value;
-              if (val === "" || val < 0) {
-                mostrarErrorFila(inputCant, "Cantidad inválida");
-                esValido = false;
-              }
-            }
-          });
-        }
-
-        return esValido;
+      // Validar Estado
+      if (!estado) {
+        mostrarError(
+          "estado_recepcion",
+          "error_estado",
+          "Seleccione el estado.",
+        );
+        esValido = false;
       }
 
-      async function guardarRecepcion() {
-        if (!validarRecepcion()) return;
+      return esValido;
+    }
 
-        const idOC = document.getElementById("id_oc_search").value;
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+    async function guardarRecepcion() {
+      if (!validarRecepcion()) return;
 
-        const datos = {
-          id_OC: idOC,
-          fecha_recepcion: document.getElementById("fecha_recepcion").value,
-          estado_recepcion: document.getElementById("estado_recepcion").value,
-          observaciones: document.getElementById("observaciones").value,
-          detalles: [],
-        };
+      const datos = {
+        id_OC: document.getElementById("id_oc_search").value,
+        fecha_recepcion: document.getElementById("fecha_recepcion").value,
+        estado_recepcion: document.getElementById("estado_recepcion").value,
+        observaciones: document.getElementById("observaciones").value,
+        detalles: [],
+      };
 
-        filas.forEach((fila) => {
+      document.querySelectorAll("#tabla-detalle tbody tr").forEach(fila => {
+        const idProd = fila.querySelector(".id-prod");
+        if (idProd) {
           datos.detalles.push({
-            id_producto: fila.querySelector(".id-prod").value,
-            cantidad_recibida: fila.querySelector(".cant-recibida").value,
+            id_producto: idProd.value,
+            cantidad_recibida: fila.querySelector(".cant-recibida").value
           });
+        }
+      });
+
+      try {
+        const res = await fetch("/api/recepciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos),
         });
 
-        try {
-          const res = await fetch("/api/recepciones", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos),
-          });
-
-          const resultado = await res.json();
-          if (res.ok) {
-            alert(" " + resultado.mensaje);
-            document.getElementById("form-recepcion").reset();
-            document.querySelector("#tabla-detalle tbody").innerHTML =
-              '<tr><td colspan="4" style="text-align:center">Cargue una Orden de Compra...</td></tr>';
-            document.getElementById("fecha_recepcion").valueAsDate = new Date();
-            limpiarErroresVisuales();
-          } else {
-            alert(" Error: " + resultado.mensaje);
-          }
-        } catch (error) {
-          console.error(error);
-          alert("Error de conexión.");
+        const resultado = await res.json();
+        if (res.ok) {
+          alert(" " + resultado.mensaje);
+          window.location.href = "consultar_recepciones.html";
+        } else {
+          alert(" Error: " + resultado.mensaje);
         }
+      } catch (error) {
+        alert("Error de conexión.");
       }
+    }
 
-      function mostrarError(idInput, idError, mensaje) {
-        const div = document.getElementById(idError);
-        const input = document.getElementById(idInput);
-        if (div) {
-          div.innerText = mensaje;
-          div.style.display = "block";
-        }
-        if (input) input.classList.add("input-error");
+    function mostrarError(idInput, idError, mensaje) {
+      const div = document.getElementById(idError);
+      const input = document.getElementById(idInput);
+      if (div) {
+        div.innerText = mensaje;
+        div.style.display = "block";
       }
+      if (input) input.classList.add("input-error");
+    }
 
-      function mostrarErrorFila(input, mensaje) {
-        input.classList.add("input-error");
-        const divError = input.parentElement.querySelector(".error-msg");
-        if (divError) {
-          divError.innerText = mensaje;
-          divError.style.display = "block";
-        }
-      }
 
-      function limpiarErroresVisuales() {
-        document
-          .querySelectorAll(".error-msg")
-          .forEach((d) => (d.style.display = "none"));
-        document
-          .querySelectorAll(".input-error")
-          .forEach((i) => i.classList.remove("input-error"));
-      }
-    </script>
-  </body>
+    function limpiarErroresVisuales() {
+      document
+        .querySelectorAll(".error-msg")
+        .forEach((d) => (d.style.display = "none"));
+      document
+        .querySelectorAll(".input-error")
+        .forEach((i) => i.classList.remove("input-error"));
+    }
+  </script>
+</body>
+
 </html>

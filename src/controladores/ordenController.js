@@ -1,62 +1,54 @@
-const db = require('../db');
+const db = require('../config/db');
+const ordenQueries = require('../consultas/ordenQueries');
+const { OrdenCompra, DetalleOrdenCompra } = require('../modelo/OrdenCompra');
 
 const ordenController = {};
 
 ordenController.crearOrden = async (req, res) => {
+    const { id_cotizacion, fecha_emision, estado_OC, monto_total_OC, detalles } = req.body;
     const connection = await db.getConnection();
+
     try {
+        // VALIDACIÓN 1 A 1 
+        const [existe] = await connection.query(
+            "SELECT id_OC FROM ORDEN_COMPRA WHERE id_cotizacion = ?",
+            [id_cotizacion]
+        );
+
+        if (existe.length > 0) {
+            return res.status(400).json({
+                mensaje: `La Cotización N° ${id_cotizacion} ya tiene la Orden de Compra N° ${existe[0].id_OC} asociada.`
+            });
+        }
         await connection.beginTransaction();
 
-        const { id_cotizacion, fecha_emision, estado_OC, monto_total_OC, observaciones, detalles } = req.body;
-
-        // 1. Cantidad de ítems 
+        // 1. Cálculos de Cabecera
         const cantidad_items = detalles.length;
-
-        // 2. Total de unidades 
         const total_unidades = detalles.reduce((suma, item) => suma + parseFloat(item.cantidad), 0);
 
-        // --- PASO 1: INSERTAR CABECERA ---
-        const sqlOrden = `
-            INSERT INTO ORDEN_COMPRA 
-            (id_cotizacion, fecha_emision, estado_OC, monto_total_OC, cantidad_items, total_unidades) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
+        // 2. Crear Instancia del Modelo
+        const nuevaOC = new OrdenCompra(
+            null, id_cotizacion, fecha_emision, estado_OC || 'Emitida',
+            monto_total_OC, cantidad_items, total_unidades
+        );
 
-        const [result] = await connection.query(sqlOrden, [
-            id_cotizacion,
-            fecha_emision,
-            estado_OC,
-            monto_total_OC,
-            cantidad_items,
-            total_unidades
-        ]);
+        // 3. Agregar Detalles al Modelo
+        detalles.forEach(d => {
+            nuevaOC.agregarDetalle(new DetalleOrdenCompra(null, null, d.id_producto, d.cantidad, d.precio_unitario));
+        });
 
+        // 4. Insertar Cabecera
+        const [result] = await ordenQueries.insertarCabecera(nuevaOC, connection);
         const id_OC = result.insertId;
 
-        // --- PASO 2: INSERTAR DETALLES ---
-        const sqlDetalle = `
-            INSERT INTO DETALLE_ORDEN_COMPRA (id_oc, id_producto, cantidad, precio_unitario) 
-            VALUES ?
-        `;
-
-        const datosDetalles = detalles.map(d => [
-            id_OC,
-            d.id_producto,
-            d.cantidad,
-            d.precio_unitario
+        // 5. Insertar Detalles
+        const datosParaInsertar = nuevaOC.detalles.map(d => [
+            id_OC, d.id_producto, d.cantidad, d.precio_unitario
         ]);
+        await ordenQueries.insertarDetalles(datosParaInsertar, connection);
 
-        await connection.query(sqlDetalle, [datosDetalles]);
-
-        const sqlUpdateReq = `
-            UPDATE REQUISICION 
-            SET estado = 'En Proceso' 
-            WHERE id_requisicion = (
-            SELECT id_requisicion FROM COTIZACION WHERE id_cotizacion = ?
-            )
-        `;
-
-        await connection.query(sqlUpdateReq, [id_cotizacion]);
+        // 6. Solo confirmamos que la Requisición sigue su curso legal
+        await ordenQueries.confirmarOrdenEnProceso(id_cotizacion, connection);
 
         await connection.commit();
         res.json({ mensaje: `¡Orden de Compra N° ${id_OC} generada exitosamente!` });
@@ -70,85 +62,58 @@ ordenController.crearOrden = async (req, res) => {
     }
 };
 
+ordenController.listar = async (req, res) => {
+    try {
+        const [ordenes] = await ordenQueries.listarTodas();
+        res.json(ordenes);
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al obtener el listado" });
+    }
+};
+
 ordenController.obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // 1. Cabecera 
-        const sqlCabecera = "SELECT * FROM ORDEN_COMPRA WHERE id_OC = ?";
-        const [cabeceras] = await db.query(sqlCabecera, [id]);
-
+        const [cabeceras] = await ordenQueries.obtenerPorId(id);
         if (cabeceras.length === 0) return res.status(404).json({ mensaje: "Orden no encontrada" });
 
-        // 2. Detalles 
-        const sqlDetalles = `
-            SELECT doc.*, p.nombre_producto, p.unidad_medida
-            FROM DETALLE_ORDEN_COMPRA doc
-            JOIN PRODUCTO p ON doc.id_producto = p.id_producto
-            WHERE doc.id_oc = ?
-        `;
-        const [detalles] = await db.query(sqlDetalles, [id]);
-
+        const [detalles] = await ordenQueries.obtenerDetallesPorId(id);
         const respuesta = cabeceras[0];
         respuesta.detalles = detalles;
 
         res.json(respuesta);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ mensaje: "Error al buscar la orden" });
     }
 };
 
-// ISTAR TODAS LAS ÓRDENES (READ)
-ordenController.listar = async (req, res) => {
-    try {
-        const sql = "SELECT * FROM ORDEN_COMPRA ORDER BY id_OC DESC";
-        const [ordenes] = await db.query(sql);
-        res.json(ordenes);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: "Error al obtener el listado" });
-    }
-};
-
-// ANULAR ORDEN (DELETE LÓGICO / UPDATE)
 ordenController.anular = async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+
     try {
-        const { id } = req.params;
-        const sql = "UPDATE ORDEN_COMPRA SET estado_OC = 'Anulada' WHERE id_OC = ?";
-        await db.query(sql, [id]);
+        await connection.beginTransaction();
+        await ordenQueries.cambiarEstado(id, 'Anulada', connection);
+
+        await ordenQueries.restaurarEstadoRequisicion(id, connection);
+
+        await connection.commit();
         res.json({ mensaje: `Orden N° ${id} anulada correctamente.` });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: "Error al anular la orden" });
+        await connection.rollback();
+        console.error("Error al anular la orden:", error);
+        res.status(500).json({ mensaje: "No se pudo anular la orden. Inténtelo de nuevo."});
+    } finally {
+        connection.release(); 
     }
 };
 
-//Simulacion Contabilidad
 ordenController.obtenerParaContabilidad = async (req, res) => {
     try {
-        const sql = `
-            SELECT 
-                oc.id_OC, 
-                p.nombre AS nombre_proveedor, 
-                oc.fecha_emision, 
-                oc.estado_OC,
-                SUM(dc.cantidad * dc.precio_unitario) as monto_total
-            FROM ORDEN_COMPRA oc
-            JOIN COTIZACION c ON oc.id_cotizacion = c.id_cotizacion
-            JOIN PROVEEDOR p ON c.id_proveedor = p.id_proveedor
-            JOIN DETALLE_COTIZACION dc ON c.id_cotizacion = dc.id_cotizacion
-            WHERE oc.estado_OC != 'Anulada'
-            GROUP BY oc.id_OC, p.nombre, oc.fecha_emision, oc.estado_OC
-            ORDER BY oc.fecha_emision DESC
-        `;
-        
-        const [ordenes] = await db.query(sql); 
+        const [ordenes] = await ordenQueries.obtenerResumenContabilidad();
         res.json(ordenes);
-
     } catch (error) {
-        console.error("Error contabilidad:", error);
-        res.status(500).json({ mensaje: "Error al obtener órdenes" });
+        res.status(500).json({ mensaje: "Error al obtener datos contables" });
     }
 };
 

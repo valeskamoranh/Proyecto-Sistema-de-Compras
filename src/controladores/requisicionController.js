@@ -1,70 +1,68 @@
-const db = require('../db');
+const db = require('../config/db');
+const { Requisicion, DetalleRequisicion } = require('../modelo/Requisicion');
+const queries = require('../consultas/requisicionQueries');
+const usuarioQueries = require('../consultas/usuarioQueries');
 
 const requisicionController = {};
 
+// CREATE
 requisicionController.crearRequisicion = async (req, res) => {
-    const connection = await db.getConnection(); 
-    
     try {
-        await connection.beginTransaction(); 
-
         const { id_usuario, fecha, estado, justificacion, detalles } = req.body;
 
-        // 1. INSERTAR CABECERA 
-        const sqlCabecera = `
-            INSERT INTO REQUISICION (id_usuario, fecha, estado, justificacion) 
-            VALUES (?, ?, ?, ?)
-        `;
-        const [resultCabecera] = await connection.query(sqlCabecera, [id_usuario, fecha, estado, justificacion]);
-        
-        const idRequisicion = resultCabecera.insertId; 
+        // VALIDACIÓN DE USUARIO 
+        const [usuario] = await usuarioQueries.buscarPorId(id_usuario);
+        if (usuario.length === 0) {
+            return res.status(400).json({
+                mensaje: `La cédula no pertenece a un usuario registrado.`
+            });
+        }
+        const nuevaReq = new Requisicion(null, id_usuario, fecha, estado, justificacion);
+        if (detalles && detalles.length > 0) {
+            detalles.forEach(d => {
+                const nuevoDetalle = new DetalleRequisicion(null, null, d.id_producto, d.cantidad, d.unidad_medida);
+                nuevaReq.agregarDetalle(nuevoDetalle);
+            });
+        }
+        const connection = await db.getConnection();
 
-        // 2. INSERTAR DETALLES 
-        const sqlDetalle = `
-            INSERT INTO DETALLE_REQUISICION (id_requisicion, id_producto, cantidad, unidad_medida) 
-            VALUES ?
-        `;
+        try {
+            await connection.beginTransaction();
 
-        const datosDetalles = detalles.map(item => [
-            idRequisicion, 
-            item.id_producto, 
-            item.cantidad, 
-            item.unidad_medida
-        ]);
+            // INSERTAR CABECERA 
+            const [resultCabecera] = await queries.insertarCabecera(nuevaReq, connection);
+            const idRequisicion = resultCabecera.insertId;
 
-        await connection.query(sqlDetalle, [datosDetalles]);
+            // INSERTAR DETALLES 
+            const datosDetalles = nuevaReq.detalles.map(detalleObj => [
+                idRequisicion,
+                detalleObj.id_producto,
+                detalleObj.cantidad,
+                detalleObj.unidad_medida
+            ]);
 
-        await connection.commit(); 
-        res.json({ mensaje: `¡Requisición N° ${idRequisicion} guardada exitosamente!` });
+            await queries.insertarDetalles(datosDetalles, connection);
+
+            await connection.commit();
+            res.json({ mensaje: `¡Requisición N° ${idRequisicion} guardada exitosamente!` });
+
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
 
     } catch (error) {
-        await connection.rollback(); 
-        console.error(error);
-        res.status(500).json({ mensaje: "Error al guardar la requisición." });
-    } finally {
-        connection.release(); 
+        console.error("Error en el servidor:", error);
+        res.status(500).json({ mensaje: "Error al procesar la requisición." });
     }
 };
 
 // LISTAR 
 requisicionController.listar = async (req, res) => {
     try {
-
-        const sql = `
-            SELECT 
-                r.id_requisicion, 
-                r.fecha, 
-                r.estado, 
-                r.justificacion,
-                u.nombre AS nombre_usuario,
-                /* Si guardaste cantidad_items en el create, úsalo aquí. 
-                   Si no, usa esta subconsulta: */
-                (SELECT COUNT(*) FROM DETALLE_REQUISICION d WHERE d.id_requisicion = r.id_requisicion) as cantidad_items
-            FROM REQUISICION r
-            LEFT JOIN USUARIO u ON r.id_usuario = u.id_usuario
-            ORDER BY r.id_requisicion DESC
-        `;
-        const [requisiciones] = await db.query(sql);
+        const [requisiciones] = await queries.listarTodas();
         res.json(requisiciones);
     } catch (error) {
         console.error(error);
@@ -77,27 +75,11 @@ requisicionController.obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // A. Obtener Cabecera
-        const sqlCabecera = `
-            SELECT r.*, u.nombre as nombre_usuario 
-            FROM REQUISICION r 
-            LEFT JOIN USUARIO u ON r.id_usuario = u.id_usuario
-            WHERE r.id_requisicion = ?
-        `;
-        const [cabeceras] = await db.query(sqlCabecera, [id]);
-
+        const [cabeceras] = await queries.obtenerPorId(id);
         if (cabeceras.length === 0) return res.status(404).json({ mensaje: "Requisición no encontrada" });
 
-        // B. Obtener Detalles
-        const sqlDetalles = `
-            SELECT d.*, p.nombre_producto 
-            FROM DETALLE_REQUISICION d
-            JOIN PRODUCTO p ON d.id_producto = p.id_producto
-            WHERE d.id_requisicion = ?
-        `;
-        const [detalles] = await db.query(sqlDetalles, [id]);
+        const [detalles] = await queries.obtenerDetalles(id);
 
-        // C. Unificar respuesta
         const respuesta = cabeceras[0];
         respuesta.detalles = detalles;
 
@@ -109,16 +91,59 @@ requisicionController.obtenerPorId = async (req, res) => {
     }
 };
 
+// --- ACTUALIZAR (UPDATE) ---
+requisicionController.actualizar = async (req, res) => {
+    const { id } = req.params;
+    const { id_usuario, fecha, justificacion, estado, detalles } = req.body;
+
+    try {
+        // 1. VALIDACIÓN DE USUARIO 
+        const [usuarioExiste] = await queries.verificarUsuario(id_usuario);
+        if (usuarioExiste.length === 0) {
+            return res.status(400).json({ mensaje: "Error: El usuario solicitante no existe." });
+        }
+
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const [rows] = await queries.obtenerPorId(id);
+            const estadosPermitidos = ['Pendiente', 'En proceso'];
+            if (!estadosPermitidos.includes(rows[0].estado)) {
+                return res.status(400).json({ mensaje: "No se puede editar una requisición ya cerrada." });
+            }
+
+            // Actualizar Cabecera y Detalles
+            await queries.actualizarCabecera(id, fecha, justificacion, estado, connection);
+            await queries.eliminarDetalles(id, connection);
+            const datosNuevos = detalles.map(item => [id, item.id_producto, item.cantidad, item.unidad_medida]);
+            await queries.insertarDetalles(datosNuevos, connection);
+
+            await connection.commit();
+            res.json({ mensaje: "Requisición actualizada correctamente." });
+
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error al actualizar." });
+    }
+};
+
+
 // RECHAZAR 
 requisicionController.rechazar = async (req, res) => {
     try {
         const { id } = req.params;
-        const sql = "UPDATE REQUISICION SET estado = 'Rechazada' WHERE id_requisicion = ?";
-        await db.query(sql, [id]);
+        await queries.actualizarEstado(id, 'Rechazada');
         res.json({ mensaje: `Requisición N° ${id} ha sido RECHAZADA.` });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ mensaje: "Error al rechazar la requisición" });
+        res.status(500).json({ mensaje: "Error al anular" });
     }
 };
 
@@ -126,12 +151,12 @@ requisicionController.rechazar = async (req, res) => {
 requisicionController.aprobar = async (req, res) => {
     try {
         const { id } = req.params;
-        const sql = "UPDATE REQUISICION SET estado = 'Aprobada' WHERE id_requisicion = ?";
-        await db.query(sql, [id]);
+        await queries.actualizarEstado(id, 'Aprobada');
         res.json({ mensaje: `Requisición N° ${id} APROBADA correctamente.` });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ mensaje: "Error al aprobar la requisición" });
+        res.status(500).json({ mensaje: "Error al aprobar" });
     }
 };
+
 module.exports = requisicionController;

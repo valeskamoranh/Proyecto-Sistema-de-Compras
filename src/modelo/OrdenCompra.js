@@ -9,7 +9,7 @@ class DetalleOrdenCompra {
 }
 
 class OrdenCompra {
-    constructor(id_oc, id_cotizacion, fecha_emision, estado_OC, monto_total_OC, cantidad_items) {
+    constructor(id_oc, id_cotizacion, fecha_emision, estado_OC, monto_total_OC, cantidad_items, total_unidades) {
         this.id_oc = id_oc;                 // PK
         this.id_cotizacion = id_cotizacion; // FK
         this.fecha_emision = fecha_emision;

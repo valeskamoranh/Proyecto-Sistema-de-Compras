@@ -1,357 +1,324 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Registrar Producto</title>
-    <link rel="stylesheet" href="../css/styles.css" />
-    <style>
-      .container-tabla {
-        margin-top: 30px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-      }
-      th,
-      td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-      }
-      th {
-        background-color: #f4f4f4;
-      }
-      .btn-edit {
-        background-color: #0984e3;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .btn-delete {
-        background-color: #d63031;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
 
-      .grupo-botones {
-        display: flex;
-        gap: 15px;
-        margin-top: 15px;
-        align-items: center;
-      }
-      .btn-secondary {
-        background-color: #636e72;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 5px;
-        cursor: pointer;
-        display: none;
-        align-items: center;
-        height: 100%;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Productos</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
 
-      .editando {
-        border: 2px solid #0984e3 !important;
-        background-color: #f0f7ff;
-      }
-    </style>
-  </head>
-  <body>
-    <a href="../formularios/menu_principal.html" class="btn-regresar">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      Regresar al Menú Principal
-    </a>
-    <form id="form-producto" class="container" novalidate>
-      <h1 id="titulo-form">Registrar Producto</h1>
-      <input type="hidden" id="id_producto_edit" value="">
+<body>
+  <a href="../formularios/menu_principal.html" class="btn-regresar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+    Regresar al Menú Principal
+  </a>
+  <form id="form-producto" class="container" novalidate>
+    <h1 id="titulo-form">Registrar Producto</h1>
+    <input type="hidden" id="id_producto_edit" value="" />
 
-      <div class="form-group">
-        <label for="nombre_producto">Nombre</label>
-        <input type="text" id="nombre_producto" name="nombre_producto" />
-        <div id="error_nombre" class="error-msg"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="descripcion">Descripción</label>
-        <textarea id="descripcion" name="descripcion"></textarea>
-        <div id="error_descripcion" class="error-msg"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="unidad_medida">Unidad Medida</label>
-        <select id="unidad_medida" name="unidad_medida">
-          <option value="">Seleccione</option>
-          <option value="Unidad">Unidad</option>
-          <option value="Caja">Caja</option>
-          <option value="Paquete">Paquete</option>
-
-          <option value="Kilogramo">Kilogramo (kg)</option>
-          <option value="Libra">Libra (lb)</option>
-          <option value="Gramo">Gramo (g)</option>
-          <option value="Saco">Saco / Bulto</option>
-
-          <option value="Litro">Litro</option>
-          <option value="Galon">Galón</option>
-          <option value="Botella">Botella</option>
-          <option value="Frasco">Frasco</option>
-
-          <option value="Metro">Metro</option>
-          <option value="Rollo">Rollo</option>
-          <option value="Resma">Resma</option>
-          <option value="Juego">Juego / Set</option>
-          <option value="Docena">Docena</option>
-        </select>
-        <div id="error_unidad" class="error-msg"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="cantidad_unidad">Cantidad por unidad</label>
-        <input
-          type="number"
-          id="cantidad_unidad"
-          name="cantidad_unidad"
-          min="1"
-        />
-        <div id="error_cantidad" class="error-msg"></div>
-      </div>
-
-      <div class="grupo-botones">
-        <button type="button" class="btn-guardar" onclick="guardarProducto()">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            style="vertical-align: middle; margin-right: 5px"
-          >
-            <path
-              fill="currentColor"
-              d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-            />
-          </svg>
-          <span id="texto-boton">Guardar Producto</span>
-        </button>
-        <button
-          type="button"
-          id="btn-cancelar"
-          class="btn-secondary"
-          onclick="resetForm()"
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
-    <div class="container container-tabla">
-      <h1>Inventario de Productos</h1>
-      <table id="tabla-productos">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Unidad</th>
-            <th>Cant.</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="lista-productos"></tbody>
-      </table>
+    <div class="form-group">
+      <label for="nombre_producto">Nombre</label>
+      <input type="text" id="nombre_producto" name="nombre_producto" />
+      <div id="error_nombre" class="error-msg"></div>
     </div>
-    <script src="../js/validaciones.js"></script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", cargarProductos);
-      function validarProducto() {
-        if (typeof limpiarErrores === "function") limpiarErrores();
-        let esValido = true;
+    <div class="form-group">
+      <label for="descripcion">Descripción (opcional)</label>
+      <textarea id="descripcion" name="descripcion"></textarea>
+      <div id="error_descripcion" class="error-msg"></div>
+    </div>
 
-        const nombre = document.getElementById("nombre_producto").value.trim();
-        const unidad = document.getElementById("unidad_medida").value;
-        const cantidad = document.getElementById("cantidad_unidad").value;
+    <div class="form-group">
+      <label for="unidad_medida">Unidad Medida</label>
+      <select id="unidad_medida" name="unidad_medida">
+        <option value="">Seleccione</option>
+        <option value="Unidad">Unidad</option>
+        <option value="Caja">Caja</option>
+        <option value="Paquete">Paquete</option>
 
-        const descripcion = document.getElementById("descripcion").value.trim();
+        <option value="Kilogramo">Kilogramo (kg)</option>
+        <option value="Libra">Libra (lb)</option>
+        <option value="Gramo">Gramo (g)</option>
+        <option value="Saco">Saco / Bulto</option>
 
-        // --- VALIDAR NOMBRE ---
-        if (esVacio(nombre)) {
-          mostrarError(
-            "nombre_producto",
-            "error_nombre",
-            "El nombre del producto es obligatorio.",
-          );
-          esValido = false;
-        } else if (nombre.length < 3) {
-          mostrarError(
-            "nombre_producto",
-            "error_nombre",
-            "El nombre es muy corto.",
-          );
-          esValido = false;
-        }
+        <option value="Litro">Litro</option>
+        <option value="Galon">Galón</option>
+        <option value="Botella">Botella</option>
+        <option value="Frasco">Frasco</option>
 
-        // --- VALIDAR UNIDAD DE MEDIDA ---
-        if (esVacio(unidad)) {
-          mostrarError(
-            "unidad_medida",
-            "error_unidad",
-            "Seleccione una unidad de medida.",
-          );
-          esValido = false;
-        }
+        <option value="Metro">Metro</option>
+        <option value="Rollo">Rollo</option>
+        <option value="Resma">Resma</option>
+        <option value="Juego">Juego / Set</option>
+        <option value="Docena">Docena</option>
+      </select>
+      <div id="error_unidad" class="error-msg"></div>
+    </div>
 
-        // --- VALIDAR CANTIDAD POR UNIDAD ---
-        if (esVacio(cantidad)) {
-          mostrarError(
-            "cantidad_unidad",
-            "error_cantidad",
-            "La cantidad es obligatoria.",
-          );
-          esValido = false;
-        } else if (!esNumeroPositivo(cantidad)) {
-          mostrarError(
-            "cantidad_unidad",
-            "error_cantidad",
-            "La cantidad debe ser mayor a 0.",
-          );
-          esValido = false;
-        }
+    <div class="form-group">
+      <label for="cantidad_unidad">Cantidad por unidad</label>
+      <input type="number" id="cantidad_unidad" name="cantidad_unidad" min="1" />
+      <div id="error_cantidad" class="error-msg"></div>
+    </div>
 
-        return esValido;
+    <div class="grupo-botones">
+      <button type="button" class="btn-guardar" onclick="guardarProducto()">
+        <svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align: middle; margin-right: 5px">
+          <path fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z" />
+        </svg>
+        <span id="texto-boton">Guardar Producto</span>
+      </button>
+      <button type="button" id="btn-cancelar" class="btn-cancelar" onclick="resetForm()" style="display: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Cancelar Edición
+      </button>
+    </div>
+  </form>
+  <div class="container container-tabla">
+    <h1>Inventario de Productos</h1>
+
+    <div class="busqueda-container">
+      <div class="busqueda-input-wrapper">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#636e72" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="input-busqueda" placeholder="Buscar por nombre..." onkeyup="filtrarTabla()" />
+      </div>
+    </div>
+
+    <table id="tabla-productos">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Unidad</th>
+          <th>Cant.</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="lista-productos"></tbody>
+    </table>
+  </div>
+  <script src="../js/validaciones.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", cargarProductos);
+    function validarProducto() {
+      if (typeof limpiarErrores === "function") limpiarErrores();
+      let esValido = true;
+
+      const nombre = document.getElementById("nombre_producto").value.trim();
+      const unidad = document.getElementById("unidad_medida").value;
+      const cantidad = document.getElementById("cantidad_unidad").value;
+
+      const descripcion = document.getElementById("descripcion").value.trim();
+
+      // --- VALIDAR NOMBRE ---
+      if (esVacio(nombre)) {
+        mostrarError(
+          "nombre_producto",
+          "error_nombre",
+          "El nombre del producto es obligatorio.",
+        );
+        esValido = false;
+      } else if (nombre.length < 3) {
+        mostrarError(
+          "nombre_producto",
+          "error_nombre",
+          "El nombre es muy corto.",
+        );
+        esValido = false;
       }
 
-      async function cargarProductos() {
-        try {
-          const res = await fetch("/api/productos");
-          const productos = await res.json();
-          const tbody = document.getElementById("lista-productos");
-          tbody.innerHTML = "";
+      // --- VALIDAR UNIDAD DE MEDIDA ---
+      if (esVacio(unidad)) {
+        mostrarError(
+          "unidad_medida",
+          "error_unidad",
+          "Seleccione una unidad de medida.",
+        );
+        esValido = false;
+      }
 
-          if (productos.length === 0) {
-            tbody.innerHTML =
-              "<tr><td colspan='6' style='text-align:center'>No hay productos registrados</td></tr>";
-            return;
-          }
+      // --- VALIDAR CANTIDAD POR UNIDAD ---
+      if (esVacio(cantidad)) {
+        mostrarError(
+          "cantidad_unidad",
+          "error_cantidad",
+          "La cantidad es obligatoria.",
+        );
+        esValido = false;
+      } else if (!esNumeroPositivo(cantidad)) {
+        mostrarError(
+          "cantidad_unidad",
+          "error_cantidad",
+          "La cantidad debe ser mayor a 0.",
+        );
+        esValido = false;
+      }
 
-          productos.forEach((p) => {
-            const id = p.id_producto || p.ID_PRODUCTO;
-            const nom = p.nombre_producto || p.NOMBRE_PRODUCTO;
-            const desc = p.descripcion || p.DESCRIPCION || "";
-            const unid = p.unidad_medida || p.UNIDAD_MEDIDA;
-            const cant = p.cantidad_unidad || p.CANTIDAD_UNIDAD;
+      return esValido;
+    }
 
-            tbody.innerHTML += `
+    async function cargarProductos() {
+      try {
+        const res = await fetch("/api/productos");
+        const productos = await res.json();
+        const tbody = document.getElementById("lista-productos");
+        tbody.innerHTML = "";
+
+        if (productos.length === 0) {
+          tbody.innerHTML =
+            "<tr><td colspan='6' style='text-align:center'>No hay productos registrados</td></tr>";
+          return;
+        }
+
+        productos.forEach((p) => {
+          const id = p.id_producto || p.ID_PRODUCTO;
+          const nom = p.nombre_producto || p.NOMBRE_PRODUCTO;
+          const desc = p.descripcion || p.DESCRIPCION || "";
+          const unid = p.unidad_medida || p.UNIDAD_MEDIDA;
+          const cant = p.cantidad_unidad || p.CANTIDAD_UNIDAD;
+
+          tbody.innerHTML += `
                         <tr>
                             <td>${id}</td>
                             <td>${nom}</td>
                             <td>${desc}</td>
                             <td>${unid}</td>
                             <td>${cant}</td>
-                            <td style="text-align: center;">
-                                <button class="btn-edit" onclick="prepararEdicion(${id}, '${nom}', '${desc}', '${unid}', '${cant}')">✏️</button>
+                            <td class="acciones">
+                                <button class="btn-edit" 
+                                   data-id="${id}" 
+                                   data-nom="${nom}" 
+                                   data-desc="${desc}" 
+                                   data-unid="${unid}" 
+                                   data-cant="${cant}" 
+                                   onclick="prepararEdicion(this)">✏️</button>
                                 <button class="btn-delete" onclick="eliminarProducto(${id})">🗑️</button>
                             </td>
                         </tr>
                     `;
-          });
-        } catch (error) {
-          console.error(error);
+        });
+      } catch (error) {
+        alert("Error grave: " + error.message);
+      }
+    }
+
+    async function guardarProducto() {
+      if (!validarProducto()) return;
+
+      const id = document.getElementById("id_producto_edit").value;
+
+      const datos = {
+        nombre_producto: document
+          .getElementById("nombre_producto")
+          .value.trim(),
+        descripcion: document.getElementById("descripcion").value.trim(),
+        unidad_medida: document.getElementById("unidad_medida").value,
+        cantidad_unidad: document.getElementById("cantidad_unidad").value,
+      };
+
+      const metodo = id ? "PUT" : "POST";
+      const url = id ? `/api/productos/${id}` : "/api/productos";
+
+      try {
+        const res = await fetch(url, {
+          method: metodo,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos),
+        });
+
+        if (res.ok) {
+          const resultado = await res.json();
+          alert("" + resultado.mensaje);
+          resetForm();
+          cargarProductos();
+        } else {
+          alert("Error al guardar");
         }
+      } catch (error) {
+        alert("Error de conexión");
       }
+    }
 
-      async function guardarProducto() {
-        if (!validarProducto()) return;
+    function prepararEdicion(btn) {
+      const id = btn.dataset.id;
+      const nombre = btn.dataset.nom;
+      const descripcion = btn.dataset.desc;
+      const unidad = btn.dataset.unid;
+      const cantidad = btn.dataset.cant;
 
-        const id = document.getElementById("id_producto_edit").value;
+      document.getElementById("id_producto_edit").value = id;
+      document.getElementById("nombre_producto").value = nombre;
+      document.getElementById("descripcion").value = descripcion;
+      document.getElementById("unidad_medida").value = unidad;
+      document.getElementById("cantidad_unidad").value = cantidad;
 
-        const datos = {
-          nombre_producto: document
-            .getElementById("nombre_producto")
-            .value.trim(),
-          descripcion: document.getElementById("descripcion").value.trim(),
-          unidad_medida: document.getElementById("unidad_medida").value,
-          cantidad_unidad: document.getElementById("cantidad_unidad").value,
-        };
+      document.getElementById("titulo-form").innerText =
+        "Editando Producto #" + id;
+      document.getElementById("texto-boton").innerText =
+        "Actualizar Producto";
+      document.getElementById("btn-cancelar").style.display = "flex";
+      document.getElementById("form-producto").classList.add("editando");
 
-        const metodo = id ? "PUT" : "POST";
-        const url = id ? `/api/productos/${id}` : "/api/productos";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
-        try {
-          const res = await fetch(url, {
-            method: metodo,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos),
-          });
+    async function eliminarProducto(id) {
+      if (!confirm("¿Estás seguro de eliminar este producto?")) return;
+      try {
+        const response = await fetch(`/api/productos/${id}`, { method: "DELETE" });
+        const data = await response.json();
 
-          if (res.ok) {
-            const resultado = await res.json();
-            alert("" + resultado.mensaje);
-            resetForm();
-            cargarProductos();
-          } else {
-            alert("Error al guardar");
-          }
-        } catch (error) {
-          alert("Error de conexión");
+        if (response.ok) {
+          alert(data.mensaje);
+          await cargarProductos(); 
+        } else {
+          alert("Error: " + data.mensaje);
         }
+      } catch (e) {
+        alert(" Error crítico de conexión. Verifica que el servidor esté encendido.");
       }
+    }
 
-      function prepararEdicion(id, nombre, descripcion, unidad, cantidad) {
-        document.getElementById("id_producto_edit").value = id;
-        document.getElementById("nombre_producto").value = nombre;
-        document.getElementById("descripcion").value = descripcion;
-        document.getElementById("unidad_medida").value = unidad;
-        document.getElementById("cantidad_unidad").value = cantidad;
+    function resetForm() {
+      const formulario = document.getElementById("form-producto");
+      formulario.reset();
+      document.getElementById("id_producto_edit").value = "";
+      document.getElementById("titulo-form").innerText = "Registrar Producto";
+      document.getElementById("texto-boton").innerText = "Guardar Producto";
+      document.getElementById("btn-cancelar").style.display = "none";
+      formulario.classList.remove("editando");
+      if (typeof limpiarErrores === "function") limpiarErrores();
+    }
 
-        document.getElementById("titulo-form").innerText =
-          "Editando Producto #" + id;
-        document.getElementById("texto-boton").innerText =
-          "Actualizar Producto";
-        document.getElementById("btn-cancelar").style.display = "flex";
-        document.getElementById("form-producto").classList.add("editando");
+    function filtrarTabla() {
+      const texto = document
+        .getElementById("input-busqueda")
+        .value.toLowerCase();
+      const filas = document.querySelectorAll("#lista-productos tr");
 
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      async function eliminarProducto(id) {
-        if (!confirm("¿Estás seguro de eliminar este producto?")) return;
-        try {
-          const res = await fetch(`/api/productos/${id}`, { method: "DELETE" });
-          if (res.ok) {
-            alert("Producto eliminado");
-            cargarProductos();
-          } else {
-            alert("No se pudo eliminar (puede estar en uso)");
-          }
-        } catch (error) {
-          alert("Error de conexión");
+      filas.forEach((fila) => {
+        const nombreCelda = fila.cells[1];
+        if (nombreCelda) {
+          const nombreTexto = nombreCelda.textContent.toLowerCase();
+          fila.style.display = nombreTexto.includes(texto) ? "" : "none";
         }
-      }
+      });
+    }
+  </script>
+</body>
 
-      function resetForm() {
-        document.getElementById("form-producto").reset();
-        document.getElementById("id_producto_edit").value = "";
-        document.getElementById("titulo-form").innerText = "Registrar Producto";
-        document.getElementById("texto-boton").innerText = "Guardar Producto";
-        document.getElementById("btn-cancelar").style.display = "none";
-        document.getElementById("form-producto").classList.remove("editando");
-        if (typeof limpiarErrores === "function") limpiarErrores();
-      }
-    </script>
-  </body>
 </html>

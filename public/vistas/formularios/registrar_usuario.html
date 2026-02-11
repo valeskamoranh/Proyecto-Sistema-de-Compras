@@ -1,289 +1,217 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Gestión de Usuarios</title>
-    <link rel="stylesheet" href="../css/styles.css" />
-    <style>
-      .container-tabla {
-        margin-bottom: 30px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        background: white;
-      }
-      th,
-      td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-      }
-      th {
-        background-color: #f4f4f4;
-      }
-      .acciones {
-        display: flex;
-        gap: 8px;
-        justify-content: center;
-      }
-      .btn-edit {
-        background-color: #0984e3;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .btn-delete {
-        background-color: #d63031;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .editando {
-        border: 2px solid #0984e3 !important;
-        background-color: #f0f7ff;
-      }
 
-      .grupo-botones {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        margin-top: 15px;
-      }
-      .btn-secondary {
-        background-color: #636e72;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        height: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <a href="../formularios/menu_principal.html" class="btn-regresar">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      Regresar al Menú Principal
-    </a>
-    <form id="form-usuario" class="container">
-      <h1 id="titulo-form">Registrar Usuario</h1>
-      <input type="hidden" id="id_usuario_edit" value="" />
-      <div class="form-group">
-        <label for="id_usuario">Cédula / ID Usuario</label>
-        <input
-          type="text"
-          id="id_usuario"
-          name="id_usuario"
-          maxlength="10"
-          placeholder="Ingrese cédula"
-        />
-        <div id="error_cedula" class="error-msg"></div>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Usuarios</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
 
-      <div class="form-group">
-        <label for="nombre">Nombre completo</label>
-        <input type="text" id="nombre" name="nombre" />
-        <div id="error_nombre" class="error-msg"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="cargo">Cargo</label>
-        <select id="cargo" name="cargo">
-          <option value="">Seleccione</option>
-          <option value="Empleado">Empleado</option>
-          <option value="Jefe de Área">Jefe de Área</option>
-          <option value="Jefe de Compras">Jefe de Compras</option>
-          <option value="Asistente de Compras">Asistente de Compras</option>
-          <option value="Jefe de Bodega">Jefe de Bodega / Almacén</option>
-          <option value="Administrador">Administrador</option>
-        </select>
-        <div id="error_cargo" class="error-msg"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="email">Correo Electrónico</label>
-        <input type="email" id="email" name="email" />
-        <div id="error_email" class="error-msg"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="id_area">ID Área</label>
-        <input type="number" id="id_area" name="id_area" />
-        <div id="error_area" class="error-msg"></div>
-      </div>
-
-      <div class="grupo-botones">
-        <button type="button" class="btn-guardar" onclick="guardarUsuario()">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            style="vertical-align: middle; margin-right: 5px"
-          >
-            <path
-              fill="currentColor"
-              d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-            />
-          </svg>
-          <span id="texto-boton">Guardar Usuario</span>
-        </button>
-        <button
-          type="button"
-          id="btn-cancelar"
-          class="btn-secondary"
-          onclick="resetForm()"
-          style="display: none"
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
-
-    <div class="container container-tabla">
-      <h1>Usuarios Registrados</h1>
-      <table id="tabla-usuarios">
-        <thead>
-          <tr>
-            <th>Cédula</th>
-            <th>Nombre</th>
-            <th>Cargo</th>
-            <th>Email</th>
-            <th>Área</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="lista-usuarios"></tbody>
-      </table>
+<body>
+  <a href="../formularios/menu_principal.html" class="btn-regresar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+    Regresar al Menú Principal
+  </a>
+  <form id="form-usuario" class="container">
+    <h1 id="titulo-form">Registrar Usuario</h1>
+    <input type="hidden" id="id_usuario_edit" value="" />
+    <div class="form-group">
+      <label for="id_usuario">Cédula / ID Usuario</label>
+      <input type="text" id="id_usuario" name="id_usuario" maxlength="10" placeholder="Ingrese cédula" />
+      <div id="error_cedula" class="error-msg"></div>
     </div>
-    <script src="../js/validaciones.js"></script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", cargarUsuarios);
+    <div class="form-group">
+      <label for="nombre">Nombre completo</label>
+      <input type="text" id="nombre" name="nombre" />
+      <div id="error_nombre" class="error-msg"></div>
+    </div>
 
-      function validarUsuario() {
-        limpiarErrores();
-        let esValido = true;
+    <div class="form-group">
+      <label for="cargo">Cargo</label>
+      <select id="cargo" name="cargo">
+        <option value="">Seleccione</option>
+        <option value="Empleado">Empleado</option>
+        <option value="Jefe de Área">Jefe de Área</option>
+        <option value="Jefe de Compras">Jefe de Compras</option>
+        <option value="Asistente de Compras">Asistente de Compras</option>
+        <option value="Jefe de Bodega">Jefe de Bodega / Almacén</option>
+        <option value="Administrador">Administrador</option>
+      </select>
+      <div id="error_cargo" class="error-msg"></div>
+    </div>
 
-        const cedula = document.getElementById("id_usuario").value.trim();
-        const nombre = document.getElementById("nombre").value.trim();
-        const cargo = document.getElementById("cargo").value;
-        const email = document.getElementById("email").value.trim();
-        const idArea = document.getElementById("id_area").value.trim();
+    <div class="form-group">
+      <label for="email">Correo Electrónico</label>
+      <input type="email" id="email" name="email" />
+      <div id="error_email" class="error-msg"></div>
+    </div>
 
-        // --- VALIDAR CÉDULA ---
-        if (esVacio(cedula)) {
-          mostrarError(
-            "id_usuario",
-            "error_cedula",
-            "La cédula es obligatoria.",
-          );
-          esValido = false;
-        } else if (!esCedulaEcuatoriana(cedula)) {
-          mostrarError(
-            "id_usuario",
-            "error_cedula",
-            "La cédula ingresada no es válida.",
-          );
-          esValido = false;
-        }
+    <div class="form-group">
+      <label for="id_area">ID Área</label>
+      <input type="number" id="id_area" name="id_area" />
+      <div id="error_area" class="error-msg"></div>
+    </div>
 
-        // --- VALIDAR NOMBRE ---
-        if (esVacio(nombre)) {
-          mostrarError("nombre", "error_nombre", "El nombre es obligatorio.");
-          esValido = false;
-        } else if (!esSoloTexto(nombre)) {
-          mostrarError(
-            "nombre",
-            "error_nombre",
-            "El nombre solo puede contener letras.",
-          );
-          esValido = false;
-        } else if (!cumpleLongitudMinima(nombre, 3)) {
-          mostrarError("nombre", "error_nombre", "El nombre es muy corto.");
-          esValido = false;
-        }
+    <div class="grupo-botones">
+      <button type="button" class="btn-guardar" onclick="guardarUsuario()">
+        <svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align: middle; margin-right: 5px">
+          <path fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z" />
+        </svg>
+        <span id="texto-boton">Guardar Usuario</span>
+      </button>
+      <button type="button" id="btn-cancelar" class="btn-cancelar" onclick="resetForm()" style="display: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Cancelar Edición
+      </button>
+    </div>
+  </form>
 
-        // --- VALIDAR CARGO ---
-        if (esVacio(cargo)) {
-          mostrarError("cargo", "error_cargo", "Debe seleccionar un cargo.");
-          esValido = false;
-        }
+  <div class="container container-tabla">
+    <h1>Usuarios Registrados</h1>
 
-        // --- VALIDAR EMAIL ---
-        if (esVacio(email)) {
-          mostrarError("email", "error_email", "El correo es obligatorio.");
-          esValido = false;
-        } else if (!esEmailValido(email)) {
-          mostrarError(
-            "email",
-            "error_email",
-            "Ingrese un formato válido (ej: usuario@dominio.com).",
-          );
-          esValido = false;
-        }
+    <div class="busqueda-container">
+      <div class="busqueda-input-wrapper">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#636e72" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="input-busqueda" placeholder="Buscar por nombre, cédula o área..."
+          onkeyup="filtrarTabla()" />
+      </div>
+    </div>
 
-        // --- VALIDAR AREA ---
-        if (esVacio(idArea)) {
-          mostrarError(
-            "id_area",
-            "error_area",
-            "El ID del área es obligatorio.",
-          );
-          esValido = false;
-        } else if (!esSoloNumeros(idArea)) {
-          mostrarError(
-            "id_area",
-            "error_area",
-            "El ID del área debe ser numérico.",
-          );
-          esValido = false;
-        }
+    <table id="tabla-usuarios">
+      <thead>
+        <tr>
+          <th>Cédula</th>
+          <th>Nombre</th>
+          <th>Cargo</th>
+          <th>Email</th>
+          <th>Área</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="lista-usuarios"></tbody>
+    </table>
+  </div>
+  <script src="../js/validaciones.js"></script>
 
-        return esValido;
+  <script>
+    document.addEventListener("DOMContentLoaded", cargarUsuarios);
+
+    function validarUsuario() {
+      limpiarErrores();
+      let esValido = true;
+
+      const cedula = document.getElementById("id_usuario").value.trim();
+      const nombre = document.getElementById("nombre").value.trim();
+      const cargo = document.getElementById("cargo").value;
+      const email = document.getElementById("email").value.trim();
+      const idArea = document.getElementById("id_area").value.trim();
+
+      // --- VALIDAR CÉDULA ---
+      if (esVacio(cedula)) {
+        mostrarError(
+          "id_usuario",
+          "error_cedula",
+          "La cédula es obligatoria.",
+        );
+        esValido = false;
+      } else if (!esCedulaEcuatoriana(cedula)) {
+        mostrarError(
+          "id_usuario",
+          "error_cedula",
+          "La cédula ingresada no es válida.",
+        );
+        esValido = false;
       }
 
-      async function cargarUsuarios() {
-        try {
-          const res = await fetch("/api/usuarios");
-          const usuarios = await res.json();
-          const tbody = document.getElementById("lista-usuarios");
-          tbody.innerHTML = "";
+      // --- VALIDAR NOMBRE ---
+      if (esVacio(nombre)) {
+        mostrarError("nombre", "error_nombre", "El nombre es obligatorio.");
+        esValido = false;
+      } else if (!esSoloTexto(nombre)) {
+        mostrarError(
+          "nombre",
+          "error_nombre",
+          "El nombre solo puede contener letras.",
+        );
+        esValido = false;
+      } else if (!cumpleLongitudMinima(nombre, 3)) {
+        mostrarError("nombre", "error_nombre", "El nombre es muy corto.");
+        esValido = false;
+      }
 
-          if (usuarios.length === 0) {
-            tbody.innerHTML =
-              "<tr><td colspan='6' style='text-align:center;'>No hay usuarios registrados</td></tr>";
-            return;
-          }
+      // --- VALIDAR CARGO ---
+      if (esVacio(cargo)) {
+        mostrarError("cargo", "error_cargo", "Debe seleccionar un cargo.");
+        esValido = false;
+      }
 
-          usuarios.forEach((u) => {
-            const id = u.id_usuario || u.ID_USUARIO || u.cedula || "N/A";
-            const nom = u.nombre || u.NOMBRE || "N/A";
-            const carg = u.cargo || u.CARGO || "N/A";
-            const email = u.email || u.EMAIL || "";
-            const area =
-              u.nombre_area || u.NOMBRE_AREA || u.id_area || u.ID_AREA || "N/A";
+      // --- VALIDAR EMAIL ---
+      if (esVacio(email)) {
+        mostrarError("email", "error_email", "El correo es obligatorio.");
+        esValido = false;
+      } else if (!esEmailValido(email)) {
+        mostrarError(
+          "email",
+          "error_email",
+          "Ingrese un formato válido (ej: usuario@dominio.com).",
+        );
+        esValido = false;
+      }
 
-            tbody.innerHTML += `
+      // --- VALIDAR AREA ---
+      if (esVacio(idArea)) {
+        mostrarError(
+          "id_area",
+          "error_area",
+          "El ID del área es obligatorio.",
+        );
+        esValido = false;
+      } else if (!esSoloNumeros(idArea)) {
+        mostrarError(
+          "id_area",
+          "error_area",
+          "El ID del área debe ser numérico.",
+        );
+        esValido = false;
+      }
+
+      return esValido;
+    }
+
+    async function cargarUsuarios() {
+      try {
+        const res = await fetch("/api/usuarios");
+        const usuarios = await res.json();
+        const tbody = document.getElementById("lista-usuarios");
+        tbody.innerHTML = "";
+
+        if (usuarios.length === 0) {
+          tbody.innerHTML =
+            "<tr><td colspan='6' style='text-align:center;'>No hay usuarios registrados</td></tr>";
+          return;
+        }
+
+        usuarios.forEach((u) => {
+          const id = u.id_usuario || u.ID_USUARIO || u.cedula || "N/A";
+          const nom = u.nombre || u.NOMBRE || "N/A";
+          const carg = u.cargo || u.CARGO || "N/A";
+          const email = u.email || u.EMAIL || "";
+          const area =
+            u.nombre_area || u.NOMBRE_AREA || u.id_area || u.ID_AREA || "N/A";
+
+          tbody.innerHTML += `
           <tr>
             <td>${id}</td>
             <td>${nom}</td>
@@ -295,88 +223,128 @@
                <button class="btn-delete" onclick="eliminarUsuario('${id}')">🗑️</button>
             </td>
           </tr>
-        `;
-          });
-        } catch (error) {
-          alert("Error grave: " + error.message);
+          `;
+        });
+      } catch (error) {
+        alert("Error grave: " + error.message);
+      }
+    }
+
+    function prepararEdicion(id, nombre, cargo, email, idArea) {
+      const idInput = document.getElementById("id_usuario");
+      const formulario = document.getElementById("form-usuario");
+
+      document.getElementById("id_usuario_edit").value = id;
+      idInput.value = id;
+      document.getElementById("nombre").value = nombre;
+      document.getElementById("cargo").value = cargo;
+      document.getElementById("email").value = email;
+      document.getElementById("id_area").value = idArea;
+
+      idInput.readOnly = true;
+      idInput.style.backgroundColor = "#e9ecef";
+
+      document.getElementById("titulo-form").innerText =
+        "Editando usuario: " + id;
+      document.getElementById("texto-boton").innerText = "Actualizar cambios";
+      document.getElementById("btn-cancelar").style.display = "flex";
+
+      formulario.classList.add("editando");
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+
+    async function guardarUsuario() {
+      if (!validarUsuario()) return;
+
+      const idOriginal = document.getElementById("id_usuario_edit").value;
+
+      const datos = {
+        id_usuario: document.getElementById("id_usuario").value.trim(),
+        nombre: document.getElementById("nombre").value.trim(),
+        cargo: document.getElementById("cargo").value,
+        email: document.getElementById("email").value.trim(),
+        id_area: document.getElementById("id_area").value.trim(),
+      };
+
+      const metodo = idOriginal ? "PUT" : "POST";
+      const url = idOriginal
+        ? `/api/usuarios/${idOriginal}`
+        : "/api/usuarios";
+
+      try {
+        const respuesta = await fetch(url, {
+          method: metodo,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos),
+        });
+
+        if (respuesta.ok) {
+          const resultado = await respuesta.json();
+          alert("" + resultado.mensaje);
+          resetForm();
+          cargarUsuarios();
+        } else {
+          const err = await respuesta.json();
+          alert("Error: " + err.mensaje);
         }
+      } catch (error) {
+        alert("Error de conexión");
       }
+    }
 
-      function prepararEdicion(id, nombre, cargo, email, idArea) {
-        document.getElementById("id_usuario_edit").value = id;
-        document.getElementById("id_usuario").value = id;
-        document.getElementById("nombre").value = nombre;
-        document.getElementById("cargo").value = cargo;
-        document.getElementById("email").value = email;
-        document.getElementById("id_area").value = idArea;
+    function resetForm() {
+      const formulario = document.getElementById("form-usuario");
+      formulario.reset();
+      document.getElementById("id_usuario_edit").value = "";
+      document.getElementById("titulo-form").innerText = "Registrar Usuario";
+      document.getElementById("texto-boton").innerText = "Guardar Usuario";
+      document.getElementById("btn-cancelar").style.display = "none";
 
-        document.getElementById("titulo-form").innerText = "Editando: " + id;
-        document.getElementById("texto-boton").innerText = "Actualizar";
-        document.getElementById("btn-cancelar").style.display = "flex";
-      }
+      formulario.classList.remove("editando");
 
-      async function guardarUsuario() {
-        if (!validarUsuario()) return;
+      const idInput = document.getElementById("id_usuario");
+      idInput.readOnly = false;
+      idInput.style.backgroundColor = "white";
 
-        const idOriginal = document.getElementById("id_usuario_edit").value;
+      if (typeof limpiarErrores === "function") limpiarErrores();
+    }
 
-        const datos = {
-          id_usuario: document.getElementById("id_usuario").value.trim(),
-          nombre: document.getElementById("nombre").value.trim(),
-          cargo: document.getElementById("cargo").value,
-          email: document.getElementById("email").value.trim(),
-          id_area: document.getElementById("id_area").value.trim(),
-        };
-
-        const metodo = idOriginal ? "PUT" : "POST";
-        const url = idOriginal
-          ? `/api/usuarios/${idOriginal}`
-          : "/api/usuarios";
-
-        try {
-          const respuesta = await fetch(url, {
-            method: metodo,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos),
-          });
-
-          if (respuesta.ok) {
-            const resultado = await respuesta.json();
-            alert("" + resultado.mensaje);
-            resetForm();
-            cargarUsuarios();
-          } else {
-            const err = await respuesta.json();
-            alert("Error: " + err.mensaje);
-          }
-        } catch (error) {
-          alert("Error de conexión");
+    async function eliminarUsuario(id) {
+      if (!confirm("¿Eliminar usuario " + id + "?")) return;
+      try {
+        const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          alert("Usuario eliminado");
+          cargarUsuarios();
         }
+      } catch (e) {
+        alert("Error de conexión");
       }
+    }
 
-      function resetForm() {
-        document.getElementById("form-usuario").reset();
-        document.getElementById("id_usuario_edit").value = "";
-        document.getElementById("titulo-form").innerText = "Registrar Usuario";
-        document.getElementById("texto-boton").innerText = "Guardar Usuario";
-        document.getElementById("btn-cancelar").style.display = "none";
-        document.getElementById("id_usuario").readOnly = false;
-        document.getElementById("id_usuario").style.backgroundColor = "white";
-        limpiarErrores();
-      }
+    function filtrarTabla() {
+      const texto = document.getElementById("input-busqueda").value.toLowerCase();
+      const filas = document.querySelectorAll("#lista-usuarios tr");
 
-      async function eliminarUsuario(id) {
-        if (!confirm("¿Eliminar usuario " + id + "?")) return;
-        try {
-          const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
-          if (res.ok) {
-            alert("Usuario eliminado");
-            cargarUsuarios();
-          }
-        } catch (e) {
-          alert("Error de conexión");
+      filas.forEach(fila => {
+        const cedula = fila.cells[0] ? fila.cells[0].textContent.toLowerCase() : "";
+        const nombre = fila.cells[1] ? fila.cells[1].textContent.toLowerCase() : "";
+        const area = fila.cells[4] ? fila.cells[4].textContent.toLowerCase() : "";
+
+        if (cedula.includes(texto) || nombre.includes(texto) || area.includes(texto)) {
+          fila.style.display = "";
+        } else {
+          fila.style.display = "none";
         }
-      }
-    </script>
-  </body>
+      });
+    }
+
+
+  </script>
+</body>
+
 </html>

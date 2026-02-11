@@ -1,4 +1,5 @@
-const db = require('../db');
+const areaQueries = require('../consultas/areaQueries');
+const Area = require('../modelo/Area');
 
 const areaController = {};
 
@@ -11,8 +12,8 @@ areaController.crearArea = async (req, res) => {
             return res.status(400).json({ mensaje: "Faltan datos obligatorios" });
         }
 
-        const sql = 'INSERT INTO AREA (nombre_area, responsable) VALUES (?, ?)';
-        await db.query(sql, [nombre_area, responsable]);
+        const nuevaArea = new Area(null, nombre_area, responsable);
+        await areaQueries.insertar(nuevaArea);
 
         res.json({ mensaje: "¡Área registrada exitosamente!" });
 
@@ -28,9 +29,10 @@ areaController.crearArea = async (req, res) => {
 // Listar todas las áreas (READ)
 areaController.listar = async (req, res) => {
     try {
-        const [areas] = await db.query("SELECT * FROM AREA ORDER BY id_area ASC");
+        const [areas] = await areaQueries.obtenerTodas();
         res.json(areas);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ mensaje: "Error al listar áreas" });
     }
 };
@@ -40,8 +42,13 @@ areaController.actualizar = async (req, res) => {
     const { id } = req.params;
     const { nombre_area, responsable } = req.body;
     try {
-        const sql = "UPDATE AREA SET nombre_area = ?, responsable = ? WHERE id_area = ?";
-        await db.query(sql, [nombre_area, responsable, id]);
+        if (!nombre_area || !responsable) {
+            return res.status(400).json({ mensaje: "Faltan datos obligatorios" });
+        }
+
+        const areaEditada = new Area(id, nombre_area, responsable);
+
+        await areaQueries.actualizar(areaEditada);
 
         res.status(200).json({ mensaje: "Área actualizada con éxito" });
     } catch (error) {
@@ -54,7 +61,8 @@ areaController.actualizar = async (req, res) => {
 areaController.eliminar = async (req, res) => {
     const { id } = req.params;
     try {
-        await db.query("DELETE FROM AREA WHERE id_area = ?", [id]);
+
+        await areaQueries.eliminar(id);
         res.json({ mensaje: "Área eliminada con éxito" });
     } catch (error) {
         res.status(400).json({ mensaje: "No se puede eliminar el área porque está en uso." });

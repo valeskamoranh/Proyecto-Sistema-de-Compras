@@ -1,4 +1,5 @@
-const db = require('../db');
+const usuarioQueries = require('../consultas/usuarioQueries');
+const Usuario = require('../modelo/Usuario');
 
 const usuarioController = {};
 
@@ -11,14 +12,9 @@ usuarioController.crearUsuario = async (req, res) => {
             return res.status(400).json({ mensaje: "Faltan datos obligatorios" });
         }
 
-        const sql = `
-            INSERT INTO USUARIO 
-            (id_usuario, nombre, email, cargo, id_area) 
-            VALUES (?, ?, ?, ?, ?)
-        `;
+        const nuevoUsuario = new Usuario(id_usuario, nombre, cargo, email, id_area);
 
-        await db.query(sql, [id_usuario, nombre, email, cargo, id_area]);
-
+        await usuarioQueries.insertar(nuevoUsuario);
         res.json({ mensaje: "¡Usuario registrado exitosamente!" });
 
     } catch (error) {
@@ -33,14 +29,8 @@ usuarioController.crearUsuario = async (req, res) => {
 // LISTAR 
 usuarioController.listar = async (req, res) => {
     try {
-        const sql = `
-            SELECT u.*, a.nombre_area 
-            FROM USUARIO u 
-            LEFT JOIN AREA a ON u.id_area = a.id_area
-        `;
-        const [usuarios] = await db.query(sql);
+        const [usuarios] = await usuarioQueries.obtenerTodos();
         res.json(usuarios);
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ mensaje: "Error del servidor" });
@@ -52,8 +42,9 @@ usuarioController.actualizar = async (req, res) => {
     const { id } = req.params;
     const { id_area, nombre, cargo, email } = req.body;
     try {
-        const sql = "UPDATE USUARIO SET id_area=?, nombre=?, cargo=?, email=? WHERE id_usuario=?";
-        await db.query(sql, [id_area, nombre, cargo, email, id]);
+        const usuarioEditado = new Usuario(id, nombre, cargo, email, id_area);
+
+        await usuarioQueries.actualizar(usuarioEditado);
         res.status(200).json({ mensaje: "Usuario actualizado correctamente" });
     } catch (error) {
         res.status(500).json({ mensaje: "Error al actualizar usuario" });
@@ -64,7 +55,7 @@ usuarioController.actualizar = async (req, res) => {
 usuarioController.eliminar = async (req, res) => {
     const { id } = req.params;
     try {
-        await db.query("DELETE FROM USUARIO WHERE id_usuario = ?", [id]);
+        await usuarioQueries.eliminar(id);
         res.status(200).json({ mensaje: "Usuario eliminado correctamente" });
     } catch (error) {
         res.status(500).json({ mensaje: "No se puede eliminar (posiblemente tenga registros asociados)" });
@@ -74,10 +65,8 @@ usuarioController.eliminar = async (req, res) => {
 // LOGIN
 usuarioController.login = async (req, res) => {
     try {
-        const { cedula } = req.body; 
-
-        const sql = "SELECT * FROM USUARIO WHERE id_usuario = ?";
-        const [usuarios] = await db.query(sql, [cedula]);
+        const { cedula } = req.body;
+        const [usuarios] = await usuarioQueries.buscarPorId(cedula);
 
         if (usuarios.length > 0) {
             res.json({ exito: true, mensaje: "Bienvenido", usuario: usuarios[0] });

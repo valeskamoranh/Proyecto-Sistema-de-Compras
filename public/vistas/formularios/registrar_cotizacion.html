@@ -1,557 +1,530 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Registrar Cotización</title>
-    <link rel="stylesheet" href="../css/styles.css" />
-    <style>
-      td {
-        vertical-align: top;
-      }
-      td .error-msg {
-        font-size: 0.75em;
-        margin-top: 2px;
-      }
-      #monto_total {
-        font-weight: bold;
-        background-color: #f0f0f0;
-      }
-    </style>
-  </head>
-  <body>
-    <a href="../formularios/menu_principal.html" class="btn-regresar">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      Regresar al Menú Principal
-    </a>
-    <form id="form-cotizacion" class="container" novalidate>
-      <h1>Registrar Cotización</h1>
 
-      <div
-        class="form-group"
-        style="
+<head>
+  <meta charset="UTF-8" />
+  <title>Registrar Cotización</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <style>
+    td {
+      vertical-align: top;
+    }
+
+    td .error-msg {
+      font-size: 0.75em;
+      margin-top: 2px;
+    }
+
+    #monto_total {
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="../formularios/menu_principal.html" class="btn-regresar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+    Regresar al Menú Principal
+  </a>
+  <form id="form-cotizacion" class="container" novalidate>
+    <input type="hidden" id="id_cotizacion_edit">
+    <h1 id="titulo-form">Registrar Cotización</h1>
+
+    <div class="form-group" style="
           background: #f8f9fa;
           padding: 15px;
           border-radius: 8px;
           border: 1px solid #ddd;
-        "
-      >
-        <label for="id_requisicion_search"> Buscar Requisición</label>
-        <div class="search-group">
-          <input
-            type="number"
-            id="id_requisicion_search"
-            name="id_requisicion"
-            required
-          />
-          <button
-            type="button"
-            class="btn-search"
-            onclick="buscarRequisicion()"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            Cargar Datos
-          </button>
-        </div>
-        <div id="error_requisicion" class="error-msg"></div>
+        ">
+      <label for="id_requisicion_search"> Número de Requisición</label>
+      <div class="search-group">
+        <input type="number" id="id_requisicion_search" name="id_requisicion" placeholder="Ej: 50000" required />
+        <button type="button" class="btn-search" onclick="buscarRequisicion()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Cargar Productos
+        </button>
       </div>
+      <div id="error_requisicion" class="error-msg"></div>
+    </div>
 
-      <div class="form-group">
-        <label for="id_proveedor">Proveedor</label>
-        <select id="id_proveedor" name="id_proveedor" required>
-          <option value="">Seleccione un proveedor</option>
-        </select>
-        <div id="error_proveedor" class="error-msg"></div>
-      </div>
+    <div class="form-group">
+      <label for="id_proveedor">Proveedor</label>
+      <select id="id_proveedor" name="id_proveedor" required>
+        <option value="">Seleccione un proveedor</option>
+      </select>
+      <div id="error_proveedor" class="error-msg"></div>
+    </div>
 
-      <div class="form-group">
-        <label for="fecha_cotizacion">Fecha de Cotización</label>
-        <input
-          type="date"
-          id="fecha_cotizacion"
-          name="fecha_cotizacion"
-          required
-        />
-        <div id="error_fecha" class="error-msg"></div>
-      </div>
+    <div class="form-group">
+      <label for="fecha_cotizacion">Fecha de Cotización</label>
+      <input type="date" id="fecha_cotizacion" name="fecha_cotizacion" required />
+      <div id="error_fecha" class="error-msg"></div>
+    </div>
 
-      <div class="form-group">
-        <label for="validez">Validez de la oferta (Días)</label>
-        <input type="number" id="validez" name="validez" min="1" required />
-        <div id="error_validez" class="error-msg"></div>
-      </div>
+    <div class="form-group">
+      <label for="validez">Validez de la oferta (Días)</label>
+      <input type="number" id="validez" name="validez" min="1" required />
+      <div id="error_validez" class="error-msg"></div>
+    </div>
 
-      <h2>Detalle de Productos</h2>
-      <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
+    <h2>Detalle de Productos</h2>
+    <div id="error_tabla" class="error-msg" style="margin-bottom: 10px"></div>
 
-      <table id="tabla-detalle">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio Unitario</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <input type="text" name="id_producto[]" class="input-texto" required>
-              <div class="error-msg"></div>
-            </td>
-            <td>
-              <input
-                type="number"
-                name="cantidad[]"
-                class="input-numero"
-                min="1"
-                oninput="calcularTotal()"
-                required
-              />
-              <div class="error-msg"></div>
-            </td>
-            <td>
-              <input
-                type="number"
-                name="precio_unitario[]"
-                class="input-numero"
-                step="0.01"
-                min="0.01"
-                oninput="calcularTotal()"
-                placeholder="0.00"
-                required
-              />
-              <div class="error-msg"></div>
-            </td>
-            <td>
-              <button type="button" onclick="eliminarFila(this)">🗑</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <table id="tabla-detalle">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
 
-      <br /><br />
+    <br /><br />
 
-      <div class="form-group">
-        <label for="monto_total">Monto Total ($)</label>
-        <input
-          type="text"
-          id="monto_total"
-          name="monto_total"
-          value="0.00"
-          readonly
-        />
-        <div id="error_monto_total" class="error-msg"></div>
-      </div>
+    <div class="form-group">
+      <label for="monto_total">Monto Total ($)</label>
+      <input type="text" id="monto_total" name="monto_total" value="0.00" readonly />
+      <div id="error_monto_total" class="error-msg"></div>
+    </div>
 
-      <button type="button" class="btn-guardar" onclick="guardarCotizacion()">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          style="vertical-align: middle; margin-right: 5px"
-        >
-          <path
-            fill="currentColor"
-            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
-          />
+    <div class="grupo-botones">
+      <button type="button" id="btn-principal" class="btn-guardar" onclick="guardarCotizacion()">
+        <svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align: middle; margin-right: 5px">
+          <path fill="currentColor"
+            d="M19,21H5V9H19M6,2H18V6H6M17,3H7V5H17M19,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z" />
         </svg>
-        Guardar Cotización
+        <span id="texto-boton">Guardar Cotización</span>
       </button>
-    </form>
+      <button type="button" id="btn-cancelar" class="btn-cancelar"
+        onclick="window.location.href='consultar_cotizaciones.html'" style="display: none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Cancelar Edición
+      </button>
+    </div>
+  </form>
 
-    <script src="../js/validaciones.js"></script>
+  <script src="../js/validaciones.js"></script>
 
-    <script>
-      let productosCache = [];
+  <script>
+    let productosCache = [];
 
-      // 1. AL CARGAR LA PÁGINA: Traer Proveedores y Productos
-      document.addEventListener("DOMContentLoaded", async () => {
-        await cargarProveedores();
-        await cargarProductos();
+    // 1. AL CARGAR LA PÁGINA: Traer Proveedores y Productos
+    document.addEventListener("DOMContentLoaded", async () => {
+      await cargarProveedores();
+      const params = new URLSearchParams(window.location.search);
+      const idCot = params.get("id");
+
+      if (idCot) {
+        await prepararModoEdicion(idCot);
+      } else {
+        document.querySelector("#tabla-detalle tbody").innerHTML =
+          '<tr><td colspan="4" style="text-align:center; color:#666;">Ingrese el N° de Requisición y pulse "Cargar Productos"</td></tr>';
+      }
+
+      const fechaInput = document.getElementById("fecha_cotizacion");
+      const hoy = new Date();
+
+      const anio = hoy.getFullYear();
+      const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoy.getDate()).padStart(2, '0');
+
+      fechaInput.value = `${anio}-${mes}-${dia}`;
+    });
+
+    async function cargarProveedores() {
+      try {
+        const res = await fetch("/api/proveedores");
+        const proveedores = await res.json();
+        const select = document.getElementById("id_proveedor");
+
+        select.innerHTML =
+          '<option value="">Seleccione un proveedor</option>';
+
+        proveedores.forEach((p) => {
+          select.innerHTML += `<option value="${p.id_proveedor}">${p.nombre}</option>`;
+        });
+      } catch (error) {
+        console.error("Error cargando proveedores:", error);
+      }
+    }
+
+    // --- FUNCIONES DE TABLA ---
+
+    function agregarFilaDatos(idProducto, nombreProducto, cantidad, precio, unidad) {
+      const tbody = document.querySelector("#tabla-detalle tbody");
+      const fila = document.createElement("tr");
+
+      fila.innerHTML = `
+        <td>
+            <input type="hidden" name="id_producto[]" value="${idProducto}">
+            <input type="text" class="input-texto" value="${nombreProducto}" 
+                   readonly style="background-color: #e9ecef; border: 1px solid #ced4da; width: 95%;">
+        </td>
+        <td>
+            <input type="number" name="cantidad[]" class="input-numero" 
+                   value="${cantidad}" readonly 
+                   style="background-color: #e9ecef; text-align: center;">
+        </td>
+        <td>
+            <input type="number" name="precio_unitario[]" class="input-numero" 
+                   value="${precio}" 
+                   step="0.01" min="0.01" placeholder="0.00" 
+                   oninput="calcularTotal()" required
+                   style="border: 2px solid #28a745;"> 
+            <div class="error-msg"></div>
+        </td>
+        <td>
+            <button type="button" onclick="eliminarFila(this)" title="Eliminar ítem" 
+                    style="background: #ff7675; color: white; border:none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                ✕
+            </button>
+        </td>
+    `;
+      tbody.appendChild(fila);
+    }
+
+    function eliminarFila(boton) {
+      const tbody = document.querySelector("#tabla-detalle tbody");
+      if (tbody.rows.length > 1) {
+        boton.closest("tr").remove();
+        calcularTotal();
+      } else {
+        alert("La cotización debe tener al menos un producto.");
+      }
+    }
+
+    async function prepararModoEdicion(id) {
+      try {
+        // 1. Pedir datos al servidor
+        const res = await fetch(`/api/cotizaciones/${id}`);
+        if (!res.ok) throw new Error("No se pudo cargar la cotización");
+
+        const data = await res.json();
+
+        // 2. Cambiar la Interfaz Visual (Títulos y Botones)
+        document.getElementById("id_cotizacion_edit").value = id;
+        document.getElementById("titulo-form").innerText = `Editando Cotización #${id}`;
+        document.getElementById("texto-boton").innerText = "Actualizar Cotización";
+        document.getElementById("btn-cancelar").style.display = "inline-flex";
+        document.getElementById("form-cotizacion").classList.add("editando");
+
+        // 3. Llenar la Cabecera (Inputs del formulario)
+        const inputReq = document.getElementById("id_requisicion_search");
+        inputReq.value = data.id_requisicion;
+        inputReq.readOnly = true;
+        inputReq.style.backgroundColor = "#e9ecef";
+
+        document.getElementById("id_proveedor").value = data.id_proveedor;
+
+        const fechaFormateada = new Date(data.fecha_cotizacion).toISOString().split('T')[0];
+        document.getElementById("fecha_cotizacion").value = fechaFormateada;
+
+        document.getElementById("validez").value = data.validez;
+
+        // 4. Llenar la Tabla de Productos
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        tbody.innerHTML = "";
+
+        if (data.detalles && data.detalles.length > 0) {
+          data.detalles.forEach(item => {
+            agregarFilaDatos(
+              item.id_producto,
+              item.nombre_producto,
+              item.cantidad,
+              item.precio_unitario,
+              item.unidad_medida
+            );
+          });
+        }
+
+        calcularTotal();
+
+      } catch (error) {
+        console.error(error);
+        alert("Error al cargar datos para edición: " + error.message);
+        window.location.href = "consultar_cotizaciones.html";
+      }
+    }
+
+    async function buscarRequisicion() {
+      const idReq = document
+        .getElementById("id_requisicion_search")
+        .value.trim();
+      const tbody = document.querySelector("#tabla-detalle tbody");
+
+      if (!idReq) {
+        alert("Por favor escribe un número de requisición.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/requisiciones/${idReq}`);
+        if (!res.ok) throw new Error("No se encontró esa requisición.");
+
+        const datos = await res.json();
+        const tbody = document.querySelector("#tabla-detalle tbody");
+        tbody.innerHTML = "";
+
+        const estadoLimpio = datos.estado.toLowerCase().trim();
+        if (estadoLimpio !== 'aprobada' && estadoLimpio !== 'en proceso') {
+          alert(`⛔ BLOQUEADO: La requisición está en estado "${datos.estado}".\n\nSolo se pueden cotizar requisiciones que estén Aprobadas o En proceso.`);
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red; font-weight:bold;">No se puede cotizar: Requisición no aprobada.</td></tr>';
+          return;
+        }
+
+        if (!datos.detalles || datos.detalles.length === 0) {
+          alert("La requisición no tiene productos.");
+          return;
+        }
+
+        datos.detalles.forEach((item) => {
+          agregarFilaDatos(item.id_producto, item.nombre_producto, item.cantidad, "", item.unidad_medida);
+
+        });
+
+        document.getElementById("error_tabla").style.display = "none";
+      } catch (error) {
+        console.error(error);
+        alert(" " + error.message);
+        tbody.innerHTML =
+          '<tr><td colspan="4" style="text-align:center; color:red">Intente con otro número.</td></tr>';
+      }
+    }
+
+    function calcularTotal() {
+      let total = 0;
+      const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+
+      filas.forEach((fila) => {
+        const cant = parseFloat(
+          fila.querySelector("[name='cantidad[]']").value,
+        );
+        const precio = parseFloat(
+          fila.querySelector("[name='precio_unitario[]']").value,
+        );
+
+        if (!isNaN(cant) && !isNaN(precio)) {
+          total += cant * precio;
+        }
       });
 
-      async function cargarProveedores() {
-        try {
-          const res = await fetch("/api/proveedores");
-          const proveedores = await res.json();
-          const select = document.getElementById("id_proveedor");
+      document.getElementById("monto_total").value = total.toFixed(2);
+    }
 
-          select.innerHTML =
-            '<option value="">Seleccione un proveedor</option>';
+    // --- GUARDAR EN BASE DE DATOS ---
 
-          proveedores.forEach((p) => {
-            select.innerHTML += `<option value="${p.id_proveedor}">${p.nombre}</option>`;
-          });
-        } catch (error) {
-          console.error("Error cargando proveedores:", error);
-        }
-      }
+    async function guardarCotizacion() {
+      if (!validarCotizacion()) return;
 
-      async function cargarProductos() {
-        try {
-          const res = await fetch("/api/productos");
-          productosCache = await res.json();
+      const idEdit = document.getElementById("id_cotizacion_edit").value;
+      const metodo = idEdit ? "PUT" : "POST";
+      const url = idEdit ? `/api/cotizaciones/${idEdit}` : "/api/cotizaciones";
 
-          const selectInicial = document.querySelector(
-            "select[name='id_producto[]']",
-          );
-          llenarSelectProductos(selectInicial);
-        } catch (error) {
-          console.error("Error cargando productos:", error);
-        }
-      }
-
-      function llenarSelectProductos(select) {
-        select.innerHTML = '<option value="">Seleccione producto</option>';
-        productosCache.forEach((prod) => {
-          select.innerHTML += `<option value="${prod.id_producto}">${prod.nombre_producto}</option>`;
-        });
-      }
-
-      // --- FUNCIONES DE TABLA ---
-
-      function agregarFila() {
-        const tbody = document.querySelector("#tabla-detalle tbody");
-
-        const nuevaFila = tbody.rows[0].cloneNode(true);
-
-        nuevaFila.querySelectorAll("input").forEach((i) => (i.value = ""));
-        nuevaFila
-          .querySelectorAll(".error-msg")
-          .forEach((div) => (div.style.display = "none"));
-        nuevaFila
-          .querySelectorAll(".input-error")
-          .forEach((i) => i.classList.remove("input-error"));
-
-        const selectProd = nuevaFila.querySelector(
-          "select[name='id_producto[]']",
-        );
-        llenarSelectProductos(selectProd);
-
-        tbody.appendChild(nuevaFila);
-      }
-
-      function eliminarFila(boton) {
-        const tbody = document.querySelector("#tabla-detalle tbody");
-        if (tbody.rows.length > 1) {
-          boton.closest("tr").remove();
-          calcularTotal();
-        } else {
-          alert("La cotización debe tener al menos un producto.");
-        }
-      }
-
-      async function buscarRequisicion() {
-        const idReq = document
+      const datos = {
+        id_requisicion: document
           .getElementById("id_requisicion_search")
-          .value.trim();
-        const tbody = document.querySelector("#tabla-detalle tbody");
+          .value.trim(),
+        id_proveedor: document.getElementById("id_proveedor").value,
+        fecha_cotizacion: document.getElementById("fecha_cotizacion").value,
+        validez: document.getElementById("validez").value,
+        monto_total: document.getElementById("monto_total").value,
+        detalles: [],
+      };
 
-        if (!idReq) {
-          alert("Por favor escribe un número de requisición.");
-          return;
-        }
+      // Armar los Detalles (Tabla)
+      const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+      filas.forEach((fila) => {
+        const idProd = fila.querySelector("[name='id_producto[]']").value;
+        const cant = fila.querySelector("[name='cantidad[]']").value;
+        const precio = fila.querySelector("[name='precio_unitario[]']").value;
 
-        try {
-          const res = await fetch(`/api/requisiciones/${idReq}`);
-          if (!res.ok) throw new Error("No se encontró esa requisición.");
-
-          const datos = await res.json();
-          const tbody = document.querySelector("#tabla-detalle tbody");
-          tbody.innerHTML = "";
-
-          if (!datos.detalles || datos.detalles.length === 0) {
-            alert("La requisición no tiene productos.");
-            return;
-          }
-
-          datos.detalles.forEach((item) => {
-            const fila = document.createElement("tr");
-
-            fila.innerHTML = `
-                    <td>
-                        <input type="hidden" name="id_producto[]" value="${item.id_producto}">
-                        
-                        <input type="text" class="input-texto" value="${item.nombre_producto}" 
-                               readonly style="background-color: #e9ecef; border: 1px solid #ced4da;">
-                    </td>
-                    <td>
-                        <input type="number" name="cantidad[]" class="input-numero" 
-                               value="${item.cantidad}" readonly 
-                               style="background-color: #e9ecef; text-align: center;">
-                    </td>
-                    <td>
-                        <input type="number" name="precio_unitario[]" class="input-numero" 
-                               step="0.01" min="0.01" placeholder="0.00" 
-                               oninput="calcularTotal()" required
-                               style="border: 2px solid #28a745;"> <div class="error-msg"></div>
-                    </td>
-                    <td>
-                        <input type="hidden" name="unidad_medida[]" value="${item.unidad_medida}">
-                        
-                        <button type="button" onclick="eliminarFila(this)" title="El proveedor no tiene este ítem">
-                            🗑
-                        </button>
-                    </td>
-                `;
-            tbody.appendChild(fila);
+        if (idProd && cant && precio) {
+          datos.detalles.push({
+            id_producto: idProd,
+            cantidad: cant,
+            precio_unitario: precio,
           });
-
-          document.getElementById("error_tabla").style.display = "none";
-          alert("Requisicion cargada correctamente.");
-        } catch (error) {
-          console.error(error);
-          alert(" " + error.message);
-          tbody.innerHTML =
-            '<tr><td colspan="4" style="text-align:center; color:red">Intente con otro número.</td></tr>';
         }
+      });
+
+      if (datos.detalles.length === 0) {
+        alert("No hay productos válidos en la cotización.");
+        return;
       }
 
-      function calcularTotal() {
-        let total = 0;
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
-
-        filas.forEach((fila) => {
-          const cant = parseFloat(
-            fila.querySelector("[name='cantidad[]']").value,
-          );
-          const precio = parseFloat(
-            fila.querySelector("[name='precio_unitario[]']").value,
-          );
-
-          if (!isNaN(cant) && !isNaN(precio)) {
-            total += cant * precio;
-          }
+      // Enviar al Servidor
+      try {
+        const respuesta = await fetch(url, {
+          method: metodo,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos),
         });
 
-        document.getElementById("monto_total").value = total.toFixed(2);
-      }
+        const resultado = await respuesta.json();
+        if (respuesta.ok) {
+          alert(resultado.mensaje);
+          window.location.href = "consultar_cotizaciones.html";
 
-      // --- GUARDAR EN BASE DE DATOS ---
-
-      async function guardarCotizacion() {
-        if (!validarCotizacion()) return;
-
-        const datos = {
-          id_requisicion: document
-            .getElementById("id_requisicion_search")
-            .value.trim(),
-          id_proveedor: document.getElementById("id_proveedor").value,
-          fecha_cotizacion: document.getElementById("fecha_cotizacion").value,
-          validez: document.getElementById("validez").value,
-          monto_total: document.getElementById("monto_total").value,
-          detalles: [],
-        };
-
-        // Armar los Detalles (Tabla)
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
-        filas.forEach((fila) => {
-          const idProd = fila.querySelector("[name='id_producto[]']").value;
-          const cant = fila.querySelector("[name='cantidad[]']").value;
-          const precio = fila.querySelector("[name='precio_unitario[]']").value;
-
-          if (idProd && cant && precio) {
-            datos.detalles.push({
-              id_producto: idProd,
-              cantidad: cant,
-              precio_unitario: precio,
-            });
-          }
-        });
-
-        if (datos.detalles.length === 0) {
-          alert("No hay productos válidos en la cotización.");
-          return;
-        }
-
-        // Enviar al Servidor
-        try {
-          const respuesta = await fetch("/api/cotizaciones", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos),
-          });
-
-          const resultado = await respuesta.json();
-
-          if (respuesta.ok) {
-            alert(" " + resultado.mensaje);
-
-            document.getElementById("form-cotizacion").reset();
-
-            document.querySelector("#tabla-detalle tbody").innerHTML =
-              '<tr><td colspan="4" style="text-align:center; color:#666;">Busque una nueva requisición...</td></tr>';
-
-            if (document.getElementById("monto_total_display")) {
-              document.getElementById("monto_total_display").innerText = "0.00";
-            }
-            document.getElementById("monto_total").value = "0.00";
-          } else {
-            alert(" ERROR DEL SERVIDOR: " + resultado.mensaje);
-          }
-        } catch (error) {
-          console.error("El error real es:", error);
-          alert(
-            "Ocurrió un error (ver consola). Puede que los datos sí se hayan guardado.",
-          );
-        }
-      }
-
-      // --- VALIDACIÓN ---
-
-      function mostrarErrorFila(input, mensaje) {
-        input.classList.add("input-error");
-        const divError = input.parentElement.querySelector(".error-msg");
-        if (divError) {
-          divError.innerText = mensaje;
-          divError.style.display = "block";
-        }
-      }
-
-      function validarCotizacion() {
-        limpiarErrores();
-        let esValido = true;
-
-        // 1. VALIDAR CABECERA
-        const idRequisicion = document
-          .getElementById("id_requisicion_search")
-          .value.trim();
-        const idProveedor = document.getElementById("id_proveedor").value;
-        const fecha = document.getElementById("fecha_cotizacion").value;
-        const validez = document.getElementById("validez").value;
-
-        // Requisición
-        if (esVacio(idRequisicion)) {
-          mostrarError(
-            "id_requisicion_search",
-            "error_requisicion",
-            "El número de requisición es obligatorio.",
-          );
-          esValido = false;
-        } else if (!esSoloNumeros(idRequisicion)) {
-          mostrarError(
-            "id_requisicion_search",
-            "error_requisicion",
-            "El ID debe ser numérico.",
-          );
-          esValido = false;
-        }
-
-        // Proveedor
-        if (esVacio(idProveedor)) {
-          mostrarError(
-            "id_proveedor",
-            "error_proveedor",
-            "Debe seleccionar un proveedor.",
-          );
-          esValido = false;
-        }
-
-        // --- VALIDAR FECHA DE COTIZACIÓN ---
-        if (esVacio(fecha)) {
-          mostrarError(
-            "fecha_cotizacion",
-            "error_fecha",
-            "La fecha es obligatoria.",
-          );
-          esValido = false;
-        } else if (!esFechaNoFutura(fecha)) {
-          mostrarError(
-            "fecha_cotizacion",
-            "error_fecha",
-            "La fecha del documento no puede ser futura.",
-          );
-          esValido = false;
-        }
-
-        // Validez
-        if (esVacio(validez)) {
-          mostrarError(
-            "validez",
-            "error_validez",
-            "Los días de validez son obligatorios.",
-          );
-          esValido = false;
-        } else if (!esNumeroPositivo(validez)) {
-          mostrarError(
-            "validez",
-            "error_validez",
-            "Debe ser un número de días válido.",
-          );
-          esValido = false;
-        }
-
-        // 2. VALIDAR DETALLES
-        const filas = document.querySelectorAll("#tabla-detalle tbody tr");
-        const errorTabla = document.getElementById("error_tabla");
-
-        if (filas.length === 0) {
-          errorTabla.innerText = "Agregue productos a la cotización.";
-          errorTabla.style.display = "block";
-          esValido = false;
         } else {
-          filas.forEach((fila) => {
-            const inputProd = fila.querySelector("[name='id_producto[]']");
-            const inputCant = fila.querySelector("[name='cantidad[]']");
-            const inputPrecio = fila.querySelector(
-              "[name='precio_unitario[]']",
-            );
-
-            if (
-              esVacio(inputProd.value) ||
-              esVacio(inputCant.value) ||
-              !esNumeroPositivo(inputCant.value) ||
-              esVacio(inputPrecio.value) ||
-              !esNumeroPositivo(inputPrecio.value)
-            ) {
-              esValido = false;
-
-              errorTabla.innerText =
-                "Verifique que todos los productos tengan cantidad y precio mayor a cero.";
-              errorTabla.style.display = "block";
-            }
-          });
+          alert("ERROR: " + (resultado.mensaje || "Error desconocido"));
         }
 
-        const montoTotal = parseFloat(
-          document.getElementById("monto_total").value,
-        );
-
-        if (isNaN(montoTotal) || montoTotal <= 0) {
-          mostrarError(
-            "monto_total",
-            "error_monto_total",
-            "El monto total no puede ser 0.",
-          );
-          esValido = false;
-        }
-
-        const idReq = document.getElementById("id_requisicion_search").value;
-        const idProv = document.getElementById("id_proveedor").value;
-        if (!idReq || !idProv) esValido = false;
-        return esValido;
+      } catch (error) {
+        console.error("Error completo:", error);
+        alert("Ocurrió un error: " + error.message);
       }
-    </script>
-  </body>
+    }
+
+    // --- VALIDACIÓN ---
+
+    function mostrarErrorFila(input, mensaje) {
+      input.classList.add("input-error");
+      const divError = input.parentElement.querySelector(".error-msg");
+      if (divError) {
+        divError.innerText = mensaje;
+        divError.style.display = "block";
+      }
+    }
+
+    function validarCotizacion() {
+      limpiarErrores();
+      let esValido = true;
+
+      // 1. VALIDAR CABECERA
+      const idRequisicion = document
+        .getElementById("id_requisicion_search")
+        .value.trim();
+      const idProveedor = document.getElementById("id_proveedor").value;
+      const fecha = document.getElementById("fecha_cotizacion").value;
+      const validez = document.getElementById("validez").value;
+
+      // Requisición
+      if (esVacio(idRequisicion)) {
+        mostrarError(
+          "id_requisicion_search",
+          "error_requisicion",
+          "El número de requisición es obligatorio.",
+        );
+        esValido = false;
+      } else if (!esSoloNumeros(idRequisicion)) {
+        mostrarError(
+          "id_requisicion_search",
+          "error_requisicion",
+          "El ID debe ser numérico.",
+        );
+        esValido = false;
+      }
+
+      // Proveedor
+      if (esVacio(idProveedor)) {
+        mostrarError(
+          "id_proveedor",
+          "error_proveedor",
+          "Debe seleccionar un proveedor.",
+        );
+        esValido = false;
+      }
+
+      // --- VALIDAR FECHA DE COTIZACIÓN ---
+      if (esVacio(fecha)) {
+        mostrarError(
+          "fecha_cotizacion",
+          "error_fecha",
+          "La fecha es obligatoria.",
+        );
+        esValido = false;
+      } else if (!esFechaNoFutura(fecha)) {
+        mostrarError(
+          "fecha_cotizacion",
+          "error_fecha",
+          "La fecha del documento no puede ser futura.",
+        );
+        esValido = false;
+      }
+
+      // Validez
+      if (esVacio(validez)) {
+        mostrarError(
+          "validez",
+          "error_validez",
+          "Los días de validez son obligatorios.",
+        );
+        esValido = false;
+      } else if (!esNumeroPositivo(validez)) {
+        mostrarError(
+          "validez",
+          "error_validez",
+          "Debe ser un número de días válido.",
+        );
+        esValido = false;
+      }
+
+      // VALIDAR DETALLES
+      const filas = document.querySelectorAll("#tabla-detalle tbody tr");
+      const errorTabla = document.getElementById("error_tabla");
+
+      if (filas.length === 0) {
+        errorTabla.innerText = "Agregue productos a la cotización.";
+        errorTabla.style.display = "block";
+        esValido = false;
+      } else {
+        filas.forEach((fila) => {
+          const inputProd = fila.querySelector("[name='id_producto[]']");
+          const inputCant = fila.querySelector("[name='cantidad[]']");
+          const inputPrecio = fila.querySelector(
+            "[name='precio_unitario[]']",
+          );
+
+          if (
+            esVacio(inputProd.value) ||
+            esVacio(inputCant.value) ||
+            !esNumeroPositivo(inputCant.value) ||
+            esVacio(inputPrecio.value) ||
+            !esNumeroPositivo(inputPrecio.value)
+          ) {
+            esValido = false;
+
+            errorTabla.innerText =
+              "Verifique que todos los productos tengan cantidad y precio mayor a cero.";
+            errorTabla.style.display = "block";
+          }
+        });
+      }
+
+      const montoTotal = parseFloat(
+        document.getElementById("monto_total").value,
+      );
+
+      if (isNaN(montoTotal) || montoTotal <= 0) {
+        mostrarError(
+          "monto_total",
+          "error_monto_total",
+          "El monto total no puede ser 0.",
+        );
+        esValido = false;
+      }
+
+      const idReq = document.getElementById("id_requisicion_search").value;
+      const idProv = document.getElementById("id_proveedor").value;
+      if (!idReq || !idProv) esValido = false;
+      return esValido;
+    }
+  </script>
+</body>
+
 </html>

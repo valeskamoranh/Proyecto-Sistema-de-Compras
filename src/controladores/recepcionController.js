@@ -1,74 +1,44 @@
-const db = require('../db');
+const db = require('../config/db');
+const queries = require('../consultas/recepcionQueries');
+const { Recepcion, DetalleRecepcion } = require('../modelo/Recepcion');
 
 const recepcionController = {};
 
 recepcionController.crearRecepcion = async (req, res) => {
+    const { id_OC, fecha_recepcion, estado_recepcion, observaciones, detalles } = req.body;
     const connection = await db.getConnection();
+
     try {
         await connection.beginTransaction();
 
-        // 1. Recibimos datos 
-        const { id_OC, fecha_recepcion, estado_recepcion, observaciones, detalles } = req.body;
+        const nuevaRecepcion = new Recepcion(null, id_OC, fecha_recepcion, observaciones, estado_recepcion);
 
-        // 2. INSERTAR CABECERA
-        const sqlHeader = `
-            INSERT INTO RECEPCION
-            (id_OC, fecha_recepcion, estado_recepcion, observaciones) 
-            VALUES (?, ?, ?, ?)
-        `;
+        detalles.forEach(d => {
+            nuevaRecepcion.agregarDetalle(new DetalleRecepcion(null, null, d.id_producto, d.cantidad_recibida));
+        });
 
-        const [result] = await connection.query(sqlHeader, [
-            id_OC, fecha_recepcion, estado_recepcion, observaciones
-        ]);
-
+        const [result] = await queries.insertarCabecera(nuevaRecepcion, connection);
         const idRecepcion = result.insertId;
 
-        // 3. INSERTAR DETALLES 
-        const sqlDetalle = `
-            INSERT INTO DETALLE_RECEPCION (id_recepcion, id_producto, cantidad_recibida) 
-            VALUES ?
-        `;
-
-        const datosDetalles = detalles.map(d => [
+        const datosDetalles = nuevaRecepcion.detalles.map(d => [
             idRecepcion,
             d.id_producto,
             d.cantidad_recibida,
         ]);
+        await queries.insertarDetalles(datosDetalles, connection);
 
-        await connection.query(sqlDetalle, [datosDetalles]);
-
-        // Actualizar Estado de la ORDEN DE COMPRA
+        // LÓGICA DE ESTADOS EN CADENA
         let nuevoEstadoOC = 'En Proceso';
 
         if (estado_recepcion === 'Completa') {
             nuevoEstadoOC = 'Entregada';
-        } else if (estado_recepcion === 'Rechazada') {
-            nuevoEstadoOC = 'En Proceso';
-        } else if (estado_recepcion === 'Parcial') {
+        } else {
             nuevoEstadoOC = 'En Proceso';
         }
-
-        const sqlUpdateOC = "UPDATE ORDEN_COMPRA SET estado_OC = ? WHERE id_OC = ?";
-        await connection.query(sqlUpdateOC, [nuevoEstadoOC, id_OC]);
-
+        await queries.actualizarEstadoOC(id_OC, nuevoEstadoOC, connection);
 
         if (estado_recepcion === 'Completa') {
-
-            const sqlBuscarId = `
-                SELECT c.id_requisicion 
-                FROM ORDEN_COMPRA oc
-                JOIN COTIZACION c ON oc.id_cotizacion = c.id_cotizacion
-                WHERE oc.id_OC = ?
-            `;
-
-            const [resultados] = await connection.query(sqlBuscarId, [id_OC]);
-
-            if (resultados.length > 0) {
-                const id_req_encontrada = resultados[0].id_requisicion;
-                const sqlUpdateDirecto = "UPDATE REQUISICION SET estado = 'Atendida' WHERE id_requisicion = ?";
-                const [infoUpdate] = await connection.query(sqlUpdateDirecto, [id_req_encontrada]);
-
-            } 
+            await queries.actualizarEstadoRequisicionFinal(id_OC, connection);
         }
 
         await connection.commit();
@@ -86,18 +56,7 @@ recepcionController.crearRecepcion = async (req, res) => {
 // LISTAR 
 recepcionController.listar = async (req, res) => {
     try {
-        const sql = `
-            SELECT 
-                r.id_recepcion, 
-                r.id_OC,
-                r.fecha_recepcion, 
-                r.observaciones, 
-                r.estado_recepcion,
-                (SELECT COUNT(*) FROM DETALLE_RECEPCION d WHERE d.id_recepcion = r.id_recepcion) as cantidad_items
-            FROM RECEPCION r
-            ORDER BY r.id_recepcion DESC
-        `;
-        const [recepciones] = await db.query(sql);
+        const [recepciones] = await queries.obtenerTodas();
         res.json(recepciones);
     } catch (error) {
         console.error(error);
@@ -111,23 +70,14 @@ recepcionController.obtenerPorId = async (req, res) => {
         const { id } = req.params;
 
         // A. Cabecera
-        const sqlCabecera = "SELECT * FROM RECEPCION WHERE id_recepcion = ?";
-        const [cabeceras] = await db.query(sqlCabecera, [id]);
-
+        const [cabeceras] = await queries.obtenerPorId(id);
         if (cabeceras.length === 0) return res.status(404).json({ mensaje: "Recepción no encontrada" });
 
         // B. Detalles 
-        const sqlDetalles = `
-            SELECT dr.*, p.nombre_producto, p.unidad_medida
-            FROM DETALLE_RECEPCION dr
-            JOIN PRODUCTO p ON dr.id_producto = p.id_producto
-            WHERE dr.id_recepcion = ?
-        `;
-        const [detalles] = await db.query(sqlDetalles, [id]);
+        const [detalles] = await queries.obtenerDetallesPorId(id);
 
         const respuesta = cabeceras[0];
         respuesta.detalles = detalles;
-
         res.json(respuesta);
 
     } catch (error) {
@@ -138,39 +88,54 @@ recepcionController.obtenerPorId = async (req, res) => {
 
 // ELIMINAR (Borrado físico por si hubo error de dedo en la entrada)
 recepcionController.eliminar = async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const { id } = req.params;
+        const [recepciones] = await queries.obtenerPorId(id);
 
-        // Primero borramos el detalle (integridad referencial)
-        await db.query("DELETE FROM DETALLE_RECEPCION WHERE id_recepcion = ?", [id]);
+        if (recepciones.length === 0) {
+            return res.status(404).json({ mensaje: "Recepción no encontrada." });
+        }
 
-        // Luego la cabecera
-        await db.query("DELETE FROM RECEPCION WHERE id_recepcion = ?", [id]);
+        const recepcionActual = recepciones[0];
+        if (recepcionActual.estado_recepcion === 'Completa') {
+            return res.status(400).json({
+                mensaje: "⛔ BLOQUEADO: No se puede eliminar una recepción que ya ha sido completada."
+            });
+        }
 
-        res.json({ mensaje: "Recepción eliminada correctamente" });
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            await queries.eliminarFisico(id, connection);
+
+            await connection.commit();
+            return res.json({ mensaje: "Recepción eliminada correctamente y registros limpiados." });
+
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: "Error al eliminar la recepción" });
+        console.error("Error crítico al eliminar:", error);
+        return res.status(500).json({
+            mensaje: "Error interno del servidor al procesar la eliminación."
+        });
     }
 };
-
 
 // Obtener datos para la vista de Inventario
 recepcionController.obtenerParaInventario = async (req, res) => {
     try {
-        const sql = `
-            SELECT r.id_recepcion, p.nombre_producto, r.fecha_recepcion, dr.cantidad_recibida
-            FROM RECEPCION r
-            JOIN DETALLE_RECEPCION dr ON r.id_recepcion = dr.id_recepcion
-            JOIN PRODUCTO p ON dr.id_producto = p.id_producto
-            WHERE r.estado_recepcion = 'Completa'
-            ORDER BY r.fecha_recepcion DESC
-        `;
-        const [resultados] = await db.query(sql);
+        const [resultados] = await queries.obtenerParaInventario();
         res.json(resultados);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: "Error al obtener datos" });
+        console.error("Error inventario:", error);
+        res.status(500).json({ mensaje: "Error al obtener datos para el inventario." });
     }
 };
 module.exports = recepcionController;

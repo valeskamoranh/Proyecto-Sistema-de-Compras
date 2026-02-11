@@ -1,4 +1,5 @@
-const db = require('../db');
+const proveedorQueries = require('../consultas/proveedorQueries');
+const Proveedor = require('../modelo/proveedor');
 
 const proveedorController = {};
 
@@ -6,13 +7,15 @@ const proveedorController = {};
 proveedorController.crearProveedor = async (req, res) => {
     const { nombre, ruc, telefono, email } = req.body;
     try {
-        const [existe] = await db.query("SELECT id_proveedor FROM PROVEEDOR WHERE ruc = ?", [ruc]);
+        const [existe] = await proveedorQueries.buscarPorRuc(ruc);
+
         if (existe.length > 0) {
             return res.status(400).json({ mensaje: "El RUC ya está registrado" });
         }
 
-        const sql = "INSERT INTO PROVEEDOR (nombre, ruc, telefono, email) VALUES (?, ?, ?, ?)";
-        await db.query(sql, [nombre, ruc, telefono, email]);
+        const nuevoProveedor = new Proveedor(null, nombre, ruc, telefono, email);
+
+        await proveedorQueries.insertar(nuevoProveedor);
         res.status(201).json({ mensaje: "Proveedor registrado con éxito" });
     } catch (error) {
         console.error("Error al crear:", error);
@@ -23,8 +26,7 @@ proveedorController.crearProveedor = async (req, res) => {
 // LISTAR
 proveedorController.listar = async (req, res) => {
     try {
-        const sql = "SELECT * FROM PROVEEDOR ORDER BY id_proveedor ASC";
-        const [proveedores] = await db.query(sql);
+        const [proveedores] = await proveedorQueries.obtenerTodos();
         res.json(proveedores);
     } catch (error) {
         console.error("Error al listar proveedores:", error);
@@ -37,8 +39,9 @@ proveedorController.actualizar = async (req, res) => {
     const { id } = req.params;
     const { nombre, ruc, telefono, email } = req.body;
     try {
-        const sql = "UPDATE PROVEEDOR SET nombre=?, ruc=?, telefono=?, email=? WHERE id_proveedor=?";
-        await db.query(sql, [nombre, ruc, telefono, email, id]);
+        const proveedorEditado = new Proveedor(id, nombre, ruc, telefono, email);
+
+        await proveedorQueries.actualizar(proveedorEditado);
         res.json({ mensaje: "Proveedor actualizado correctamente" });
     } catch (error) {
         console.error("Error al actualizar:", error);
@@ -50,7 +53,7 @@ proveedorController.actualizar = async (req, res) => {
 proveedorController.eliminar = async (req, res) => {
     const { id } = req.params;
     try {
-        await db.query("DELETE FROM PROVEEDOR WHERE id_proveedor = ?", [id]);
+        await proveedorQueries.eliminar(id);
         res.json({ mensaje: "Proveedor eliminado" });
     } catch (error) {
         if (error.errno === 1451) {

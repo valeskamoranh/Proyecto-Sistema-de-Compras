@@ -454,13 +454,13 @@ body {
 }
 
 .search-group {
-  display: flex; 
-  gap: 10px; 
-  align-items: stretch; 
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
 }
 
 .btn-search {
-  background-color: #6c5ce7; 
+  background-color: #6c5ce7;
   color: white;
   border: none;
   padding: 0 20px;
@@ -474,7 +474,73 @@ body {
 }
 
 .btn-search:hover {
-  background-color: #5a4ad1; 
+  background-color: #5a4ad1;
+}
+
+.container-tabla {
+  margin-bottom: 30px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: white;
+}
+
+th,
+td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f4f4f4;
+}
+
+/* --- Botones de Acción --- */
+.acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  padding: 8px !important;
+}
+
+.btn-edit {
+  background-color: #0984e3;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-edit:hover {
+  background-color: #074b81;
+}
+
+.btn-delete {
+  background-color: #d63031;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-delete:hover {
+  background-color: #af2626;
+}
+
+/* --- Estado de Edición --- */
+.editando {
+  border: 2px solid #0984e3 !important;
+  background-color: #f0f7ff;
+  box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
 }
 
 /* Ajuste para que el input ocupe todo el espacio sobrante */
@@ -483,28 +549,433 @@ body {
 }
 
 /* Estilo para el botón Cancelar */
-.btn-secondary {
-    background-color: #636e72;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+.btn-cancelar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #f8f9fa;
+  color: #636e72;
+  border: 1px solid #dfe6e9;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-cancelar:hover {
+  background-color: #fab1a0;
+  color: #d63031;
+  border-color: #ff7675;
+  box-shadow: 0 2px 5px rgba(214, 48, 49, 0.1);
+}
+
+.btn-cancelar svg {
+  transition: transform 0.3s ease;
+}
+
+.btn-cancelar:hover svg {
+  transform: rotate(90deg);
+}
+
+/* --- Estilos del Buscador --- */
+.busqueda-container {
+  width: 100%;
     display: flex;
-    align-items: center;
-    height: 100%; 
+    justify-content: flex-end; 
+    margin: 30px 0;
+    padding: 0;
 }
 
-.btn-secondary:hover {
-    background-color: #2d3436; 
+.busqueda-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 0 12px;
+  width: 100%;
+  max-width: 300px;
+  transition: all 0.3s ease;
 }
 
-/* Contenedor para separar los botones */
+.busqueda-input-wrapper:focus-within {
+  border-color: #0984e3;
+  box-shadow: 0 0 8px rgba(9, 132, 227, 0.15);
+}
+
+#input-busqueda {
+  border: none;
+  padding: 10px 8px;
+  outline: none;
+  width: 100%;
+  font-size: 0.95em;
+  color: #2d3436;
+  background: transparent;
+}
+
+#input-busqueda:focus {
+  outline: none;
+}
+
+.busqueda-input-wrapper {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.busqueda-input-wrapper:focus-within {
+  border-color: #0984e3;
+  box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.1);
+}
+
+.btn-guardar:active,
+.btn-cancelar:active,
+.btn-edit:active,
+.btn-delete:active {
+  transform: scale(0.97);
+  filter: brightness(0.9);
+}
+
+button:focus {
+  outline: none;
+}
+
 .grupo-botones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  min-height: 45px;
+}
+
+#tabla-listado {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#tabla-listado th {
+  background-color: #f3f0fc;
+  color: #5e2a84;
+  padding: 12px;
+  text-align: center;
+}
+
+#tabla-listado td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+}
+
+/* Badges de estado */
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: bold;
+  display: inline-block;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 80px;
+}
+
+/* 1. Pendiente:  */
+.estado-pendiente {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+/* 2. Aprobada:  */
+.estado-aprobada {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+/* 3. Rechazada: */
+.estado-rechazada {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* 4. En Proceso: */
+.estado-en-proceso {
+  background: #cce5ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+}
+
+/* 5. Atendida: */
+.estado-atendida {
+  background: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.btn-ver {
+  background-color: #0984e3;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.btn-rechazar {
+  background: #ff7675;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-rechazar:disabled {
+  background: #dfe6e9;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-aprobar {
+  background: #00b894;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.btn-aprobar:disabled {
+  background: #dfe6e9;
+  cursor: not-allowed;
+}
+
+.btn-ver,
+.btn-aprobar,
+.btn-rechazar,
+.btn-edit {
+  min-width: 40px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acciones-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px !important;
+  align-items: center;
+}
+
+.fila-botones {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.fila-botones button {
+  flex: 1;
+  max-width: 100px;
+  font-size: 0.85em;
+  padding: 6px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-container {
+  margin: 30px 0; 
+  display: flex;
+  justify-content: flex-start;
+}
+
+.input-busqueda {
+  width: 100%;
+  max-width: 850px; 
+  padding: 15px 20px; 
+  font-size: 1.1em;
+  border: 2px solid #ddd;
+  border-radius: 30px;    
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.input-busqueda:focus {
+  border-color: #5e2a84; 
+  box-shadow: 0 4px 12px rgba(94, 42, 132, 0.15);
+  max-width: 900px;
+}
+
+#tabla-listado {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+#tabla-listado th {
+  background-color: #f3f0fc;
+  color: #5e2a84;
+  padding: 12px;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 0.9em;
+}
+#tabla-listado td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+  color: #444;
+}
+
+/* BOTONES DE ACCIÓN */
+.btn-ver {
+  background-color: #0984e3;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.btn-delete {
+  background: #d63031;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-ver:hover {
+  background-color: #0769b5;
+}
+
+.btn-delete:hover {
+  background-color: #b02627;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 25px;
+  border-radius: 10px;
+  width: 60%;
+  max-width: 800px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+.close-btn {
+  float: right;
+  cursor: pointer;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+}
+.close-btn:hover {
+  color: #000;
+}
+
+/* 1. Emitida: */
+.estado-emitida {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #bbdefb;
+}
+
+/* 2. En Proceso: */
+.estado-en-proceso {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #ffeeba;
+}
+
+/* 3. Entregada: */
+.estado-entregada {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+/* 4. Anulada: Rojo */
+.estado-anulada {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #f5c6cb;
+}
+
+.btn-anular {
+  background: #ff7675;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-anular:disabled {
+  background: #dfe6e9;
+  cursor: not-allowed;
+}
+
+/* 1. Completa  */
+.estado-completa {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+/* 2. Parcial */
+.estado-parcial {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #ffeeba;
+}
+
+/* 3. Rechazada  */
+.estado-rechazada {
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+/* Contenedor para alinear botones horizontalmente */
+.acciones-container {
     display: flex;
-    gap: 15px; 
+    justify-content: center; 
+    gap: 8px;              /
+}
+
+.btn-ver, .btn-delete {
+    display: inline-flex;
     align-items: center;
-    margin-top: 15px;
+    justify-content: center;
+    min-width: 40px;
 }
