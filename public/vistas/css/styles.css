@@ -988,6 +988,82 @@ button:focus {
     border-radius: 4px;
     font-weight: bold;
 }
+
 .btn-pdf:hover {
     background-color: #c82333;
+}
+
+.user-profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 25px;
+  background-color: #ffffff;
+  border-bottom: 2px solid #f0f2f5;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 35px;
+  height: 35px;
+  background-color: #5e2a84; 
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 700;
+  color: #2d3436;
+  font-size: 14px;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #636e72;
+}
+
+.btn-logout-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff1f0;
+  color: #e74c3c;
+  border: 1px solid #ffccc7;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.btn-logout-modern:hover {
+  background-color: #e74c3c;
+  color: white;
+  border-color: #e74c3c;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-logout-modern svg {
+  transition: transform 0.3s ease;
+}
+
+.btn-logout-modern:hover svg {
+  transform: translateX(3px);
 }

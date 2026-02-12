@@ -1,72 +1,93 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Sistema de Compras</title>
-    <link rel="stylesheet" href="../css/styles.css" />
-  </head>
-  <body>
-    <header class="header">
-      <div class="header-content">
-        <h1 class="titulo-principal">Sistema de Compras</h1>
-        <p>Gestión integral del proceso de compras</p>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Sistema de Compras</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content">
+      <h1 class="titulo-principal">Sistema de Compras</h1>
+      <p>Gestión integral del proceso de compras</p>
+    </div>
+
+    <div class="user-profile-header">
+      <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div class="user-details">
+          <span class="user-name">Administrador</span>
+          <span class="user-role">Sistema de Compras</span>
+        </div>
       </div>
-    </header>
+      <button onclick="logout()" class="btn-logout-modern">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </header>
 
-    <main class="dashboard">
-      <section class="module">
-        <h2>Áreas</h2>
-        <p>Gestión de áreas o departamentos.</p>
-        <a href="registrar_area.html">Acceder</a>
-      </section>
+  <main class="dashboard">
+    <section class="module">
+      <h2>Áreas</h2>
+      <p>Gestión de áreas o departamentos.</p>
+      <a href="registrar_area.html">Acceder</a>
+    </section>
 
-      <section class="module">
-        <h2>Usuarios</h2>
-        <p>Administración de usuarios del sistema.</p>
-        <a href="registrar_usuario.html">Acceder</a>
-      </section>
+    <section class="module">
+      <h2>Usuarios</h2>
+      <p>Administración de usuarios del sistema.</p>
+      <a href="registrar_usuario.html">Acceder</a>
+    </section>
 
-      <section class="module">
-        <h2>Productos</h2>
-        <p>Administración del catálogo de productos.</p>
-        <a href="registrar_producto.html">Acceder</a>
-      </section>
+    <section class="module">
+      <h2>Productos</h2>
+      <p>Administración del catálogo de productos.</p>
+      <a href="registrar_producto.html">Acceder</a>
+    </section>
 
-      <section class="module">
-        <h2>Proveedores</h2>
-        <p>Administración de los proveedores.</p>
-        <a href="registrar_proveedor.html">Acceder</a>
-      </section>
+    <section class="module">
+      <h2>Proveedores</h2>
+      <p>Administración de los proveedores.</p>
+      <a href="registrar_proveedor.html">Acceder</a>
+    </section>
 
-      <section class="module">
-        <h2>Requisición</h2>
-        <p>Solicitud de productos por parte de las áreas.</p>
-        <a href="registrar_requisicion.html">Acceder</a>
-        <a href="consultar_requisiciones.html" class="btn-secundario">Consultar Requisiciones</a>
-      </section>
+    <section class="module">
+      <h2>Requisición</h2>
+      <p>Solicitud de productos por parte de las áreas.</p>
+      <a href="registrar_requisicion.html">Acceder</a>
+      <a href="consultar_requisiciones.html" class="btn-secundario">Consultar Requisiciones</a>
+    </section>
 
-      <section class="module">
-        <h2>Cotización</h2>
-        <p>Registro y evaluación de cotizaciones.</p>
-        <a href="registrar_cotizacion.html">Acceder</a>
-        <a href="consultar_cotizaciones.html" class="btn-secundario">Consultar Cotizaciones</a>
-      </section>
+    <section class="module">
+      <h2>Cotización</h2>
+      <p>Registro y evaluación de cotizaciones.</p>
+      <a href="registrar_cotizacion.html">Acceder</a>
+      <a href="consultar_cotizaciones.html" class="btn-secundario">Consultar Cotizaciones</a>
+    </section>
 
-      <section class="module">
-        <h2>Orden de Compra</h2>
-        <p>Emisión de órdenes de compra aprobadas.</p>
-        <a href="registrar_oc.html">Acceder</a>
-        <a href="consultar_ordenes.html" class="btn-secundario">Consultar Órdenes</a>
-      </section>
+    <section class="module">
+      <h2>Orden de Compra</h2>
+      <p>Emisión de órdenes de compra aprobadas.</p>
+      <a href="registrar_oc.html">Acceder</a>
+      <a href="consultar_ordenes.html" class="btn-secundario">Consultar Órdenes</a>
+    </section>
 
-      <section class="module">
-        <h2>Recepción</h2>
-        <p>Control de recepción de productos adquiridos.</p>
-        <a href="registrar_recepcion.html">Acceder</a>
-        <a href="consultar_recepciones.html" class="btn-secundario">Consultar Recepciones</a>
-      </section>
+    <section class="module">
+      <h2>Recepción</h2>
+      <p>Control de recepción de productos adquiridos.</p>
+      <a href="registrar_recepcion.html">Acceder</a>
+      <a href="consultar_recepciones.html" class="btn-secundario">Consultar Recepciones</a>
+    </section>
 
-      <!-- <section class="module">
+    <!-- <section class="module">
         <h2>Ingreso a Inventario</h2>
         <p>Registro del ingreso de los productos al inventario.</p>
         <a href="registrar_ingreso.html">Acceder</a>
@@ -78,6 +99,22 @@
         <a href="registrar_integracion_externa.html">Acceder</a>
       </section> -->
 
-    </main>
-  </body>
+  </main>
+
+  <script>
+    function logout() {
+      if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/index.html";
+      }
+    }
+  </script>
+
+</body>
+
+</html>
+</body>
+
 </html>
